@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import BottomNav from '$lib/components/BottomNav.svelte';
 
 	let { children } = $props();
 </script>
@@ -9,4 +10,8 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{@render children()}
+<div class="min-h-screen bg-black pb-20 text-white">
+	{@render children()}
+</div>
+
+<BottomNav />
