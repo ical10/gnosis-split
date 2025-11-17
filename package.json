@@ -36,6 +36,11 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
-		"lucide-svelte": "^0.554.0"
+		"@wagmi/connectors": "^6.1.4",
+		"@wagmi/core": "^2.22.1",
+		"@walletconnect/modal": "^2.7.0",
+		"lucide-svelte": "^0.554.0",
+		"viem": "2",
+		"wagmi": "^2.19.4"
 	}
 }
