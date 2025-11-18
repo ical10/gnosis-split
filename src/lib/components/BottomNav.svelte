@@ -1,20 +1,18 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import Home from 'lucide-svelte/icons/home';
 	import CreditCard from 'lucide-svelte/icons/credit-card';
 	import Receipt from 'lucide-svelte/icons/receipt';
 	import PlusCircle from 'lucide-svelte/icons/plus-circle';
 
 	const navItems = [
-		// { href: '/', icon: Home, label: 'Home' },
 		{ href: '/cards', icon: CreditCard, label: 'Cards' },
 		{ href: '/split/new', icon: PlusCircle, label: 'New', fab: true },
-		{ href: '/splits', icon: Receipt, label: 'Splits' },
+		{ href: '/splits', icon: Receipt, label: 'Splits' }
 	];
 </script>
 
 <nav class="pb-safe fixed right-0 bottom-0 left-0 border-t border-zinc-800 bg-zinc-900">
-	<div class="mx-auto flex h-16 max-w-lg items-center justify-around px-2">
+	<div class="mx-auto flex h-16 max-w-md items-center justify-around border-x border-white px-2">
 		{#each navItems as item}
 			{#if item.fab}
 				<a

@@ -11,8 +11,10 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-screen bg-black pb-20 text-white">
-	{@render children()}
+<div class="min-h-screen bg-black text-white">
+	<div class="mx-auto flex min-h-screen max-w-md flex-col border-x border-white pb-20">
+		{@render children()}
+	</div>
 </div>
 
 <BottomNav />
