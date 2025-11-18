@@ -30,7 +30,7 @@
 		<div class="mt-8 space-y-2 text-sm text-zinc-500">
 			<p>💳 Link your Gnosis Pay card</p>
 			<p>👥 Split bills with friends</p>
-			<p>⛓️ Get paid on-chain in EURe</p>
+			<p>⛓️ Get paid on-chain in stablecoins</p>
 		</div>
 	</div>
 </div>

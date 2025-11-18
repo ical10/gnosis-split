@@ -4,26 +4,13 @@
 	import { goto } from '$app/navigation';
 	import AuthGuard from '$lib/components/AuthGuard.svelte';
 	import { getSplit, updateSplit } from '$lib/storage';
-	import { address as walletAddress } from '$lib/stores/wallet';
+	import { address as walletAddress, selectedNetworkId } from '$lib/stores/wallet';
 	import type { Split, Participant } from '$lib/types';
-	import { CircleCheck, Clock, ExternalLink, Copy, QrCode } from 'lucide-svelte';
+	import { CircleCheck, Clock, Copy, QrCode, Share2 } from 'lucide-svelte';
 	import { getWalletClient } from '@wagmi/core';
-	import { parseUnits, encodeFunctionData, type Address } from 'viem';
+	import { parseEther, type Address } from 'viem';
+	import { gnosis, gnosisChiado } from 'viem/chains';
 	import { config } from '$lib/appkit';
-
-	const EURE_ADDRESS = '0xcB444e90D8198415266c6a2724b7900fb12FC56E';
-	const ERC20_ABI = [
-		{
-			name: 'transfer',
-			type: 'function',
-			stateMutability: 'nonpayable',
-			inputs: [
-				{ name: 'to', type: 'address' },
-				{ name: 'amount', type: 'uint256' }
-			],
-			outputs: [{ type: 'bool' }]
-		}
-	] as const;
 
 	let split = $state<Split | null>(null);
 	let paying = $state(false);
@@ -80,7 +67,7 @@
 	}
 
 	async function payMyShare() {
-		if (!split || !$walletAddress) return;
+		if (!split || !$walletAddress || !config) return;
 
 		const myPart = getMyParticipant();
 		if (!myPart) {
@@ -98,15 +85,11 @@
 				return;
 			}
 
-			const amountInEURe = parseUnits((myPart.amount / 100).toFixed(18), 18);
+			const amountInXDAI = parseEther((myPart.amount / 100).toFixed(18));
 
 			const hash = await walletClient.sendTransaction({
-				to: EURE_ADDRESS as Address,
-				data: encodeFunctionData({
-					abi: ERC20_ABI,
-					functionName: 'transfer',
-					args: [split.payerAddress as Address, amountInEURe]
-				})
+				to: split.payerAddress as Address,
+				value: amountInXDAI
 			});
 
 			updateSplit(split.id, (s) => ({
@@ -128,16 +111,21 @@
 		}
 	}
 
+	function copyLink() {
+		if (!split) return;
+		const url = window.location.href;
+		navigator.clipboard.writeText(url);
+		alert('Split link copied! Share it with participants.');
+	}
+
 	function copyAddress(addr: string) {
 		navigator.clipboard.writeText(addr);
 		alert('Address copied!');
 	}
 
-	function getGnosisScanUrl(participantAddress: string): string {
+	function getPaymentUrl(participantAddress: string): string {
 		if (!split) return '';
-		const amount = split.participants.find((p) => p.address === participantAddress)?.amount || 0;
-		const amountInEURe = (amount / 100).toFixed(18);
-		return `https://gnosisscan.io/address/${split.payerAddress}`;
+		return `/split/${split.id}/payment/${participantAddress}`;
 	}
 
 	function shortenAddress(addr: string): string {
@@ -156,8 +144,19 @@
 					>
 						← Back to Splits
 					</button>
-					<h1 class="mb-2 text-2xl font-bold">{split.description}</h1>
-					<p class="text-zinc-400">{formatDate(split.date)}</p>
+					<div class="mb-2 flex items-start justify-between gap-3">
+						<div class="flex-1">
+							<h1 class="mb-2 text-2xl font-bold">{split.description}</h1>
+							<p class="text-zinc-400">{formatDate(split.date)}</p>
+						</div>
+						<button
+							onclick={copyLink}
+							class="rounded-lg bg-zinc-800 p-3 transition-colors hover:bg-zinc-700"
+							title="Share split link"
+						>
+							<Share2 class="h-5 w-5" />
+						</button>
+					</div>
 				</div>
 
 				<div
@@ -238,21 +237,18 @@
 											QR Code
 										</button>
 										<a
-											href={getGnosisScanUrl(participant.address)}
-											target="_blank"
-											rel="noopener noreferrer"
+											href={getPaymentUrl(participant.address)}
 											class="flex items-center gap-1 rounded-lg bg-zinc-800 px-3 py-2 text-sm transition-colors hover:bg-zinc-700"
 										>
-											View
-											<ExternalLink class="h-3 w-3" />
+											View Payment
 										</a>
 									</div>
 
 									{#if showQr === participant.address}
 										<div class="mt-3 rounded-lg bg-white p-4 text-center">
-											<div class="text-sm text-zinc-900">
-												QR code would display here<br />
-												(Payment link to GnosisScan)
+											<div class="mb-2 text-sm font-medium text-zinc-900">Share payment link</div>
+											<div class="text-xs break-all text-zinc-600">
+												{window.location.origin}{getPaymentUrl(participant.address)}
 											</div>
 										</div>
 									{/if}
@@ -276,7 +272,7 @@
 					</button>
 
 					<p class="mt-3 text-center text-sm text-zinc-500">
-						Payment will be sent in EURe on Gnosis Chain
+						Payment will be sent in xDAI on Gnosis Chiado (testnet)
 					</p>
 				{/if}
 			</div>
