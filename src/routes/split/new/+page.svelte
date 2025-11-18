@@ -112,8 +112,9 @@
 		}
 
 		const totalCents = Math.round(amountNum * 100);
-		const shareBase = Math.floor(totalCents / participants.length);
-		const remainder = totalCents % participants.length;
+		const totalPeople = participants.length + 1;
+		const shareBase = Math.floor(totalCents / totalPeople);
+		const remainder = totalCents % totalPeople;
 
 		return participants.map((p, i) => ({
 			...p,
