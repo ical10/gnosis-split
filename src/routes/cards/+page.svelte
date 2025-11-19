@@ -131,7 +131,7 @@
 
 					<div class="scrollbar-hide space-y-3 overflow-y-auto">
 						{#each transactions as tx}
-							<CardUI.Root class="hover:bg-accent transition-all">
+							<CardUI.Root>
 								<CardUI.Content class="p-4">
 									<div class="flex items-start justify-between">
 										<div class="flex-1">
