@@ -4,6 +4,8 @@
 	import { isConnected } from '$lib/stores/wallet';
 	import { appKit } from '$lib/appkit';
 	import { hideAppkitButton } from '$lib/stores/ui';
+	import { Button } from '$lib/components/ui/button';
+	import { Spinner } from '$lib/components/ui/spinner';
 
 	let { children } = $props();
 
@@ -30,15 +32,15 @@
 {#if checking}
 	<div class="flex min-h-[80vh] items-center justify-center">
 		<div class="text-center">
-			<div class="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-emerald-500"></div>
-			<p class="mt-4 text-zinc-400">Checking connection...</p>
+			<Spinner class="mx-auto h-12 w-12" />
+			<p class="text-muted-foreground mt-4">Checking connection...</p>
 		</div>
 	</div>
 {:else if $isConnected}
 	<div class="flex flex-col">
 		{#if !$hideAppkitButton}
-			<div class="sticky top-0 z-10 flex justify-end border-b border-zinc-800 bg-zinc-950 p-4">
-				<appkit-button />
+			<div class="bg-background sticky top-0 z-10 flex justify-end border-b bg-zinc-950 p-4">
+				<appkit-button></appkit-button>
 			</div>
 		{/if}
 		{@render children()}
@@ -47,13 +49,8 @@
 	<div class="flex min-h-[80vh] items-center justify-center p-6">
 		<div class="max-w-md text-center">
 			<h1 class="mb-4 text-3xl font-bold">Connect Your Wallet</h1>
-			<p class="mb-6 text-zinc-400">Please connect your wallet to access this page</p>
-			<button
-				onclick={() => appKit?.open()}
-				class="rounded-lg bg-emerald-500 px-6 py-3 font-semibold transition-colors hover:bg-emerald-600"
-			>
-				Connect Wallet
-			</button>
+			<p class="text-muted-foreground mb-6">Please connect your wallet to access this page</p>
+			<Button onclick={() => appKit?.open()} size="lg">Connect Wallet</Button>
 		</div>
 	</div>
 {/if}

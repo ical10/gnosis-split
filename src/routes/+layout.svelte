@@ -11,8 +11,8 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-screen bg-black text-white">
-	<div class="mx-auto flex min-h-screen max-w-md flex-col border-x border-white pb-20">
+<div class="dark min-h-screen">
+	<div class="mx-auto flex min-h-screen max-w-md flex-col border-x pb-20">
 		{@render children()}
 	</div>
 </div>

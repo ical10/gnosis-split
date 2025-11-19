@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { isConnected } from '$lib/stores/wallet';
 	import { appKit } from '$lib/appkit';
+	import { Button } from '$lib/components/ui/button';
 
 	onMount(() => {
 		const unsubscribe = isConnected.subscribe((connected) => {
@@ -18,16 +19,17 @@
 <div class="flex min-h-[80vh] flex-col items-center justify-center p-6">
 	<div class="max-w-md text-center">
 		<h1 class="mb-4 text-4xl font-bold">Gnosis Split</h1>
-		<p class="mb-8 text-lg text-zinc-400">Split expenses and get reimbursed on-chain</p>
+		<p class="mb-8 text-lg text-muted-foreground">Split expenses and get reimbursed on-chain</p>
 
-		<button
+		<Button
 			onclick={() => appKit?.open()}
-			class="rounded-lg bg-emerald-500 px-8 py-4 text-lg font-semibold transition-colors hover:bg-emerald-600"
+			size="lg"
+			class="px-8 py-4 text-lg"
 		>
 			Connect Wallet
-		</button>
+		</Button>
 
-		<div class="mt-8 space-y-2 text-sm text-zinc-500">
+		<div class="mt-8 space-y-2 text-sm text-muted-foreground">
 			<p>💳 Link your Gnosis Pay card</p>
 			<p>👥 Split bills with friends</p>
 			<p>⛓️ Get paid on-chain in stablecoins</p>
