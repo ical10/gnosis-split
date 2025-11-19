@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { isConnected } from '$lib/stores/wallet';
 	import { appKit } from '$lib/appkit';
+	import { hideAppkitButton } from '$lib/stores/ui';
 
 	let { children } = $props();
 
@@ -35,9 +36,11 @@
 	</div>
 {:else if $isConnected}
 	<div class="flex flex-col">
-		<div class="sticky top-0 z-10 flex justify-end border-b border-zinc-800 bg-zinc-950 p-4">
-			<appkit-button />
-		</div>
+		{#if !$hideAppkitButton}
+			<div class="sticky top-0 z-10 flex justify-end border-b border-zinc-800 bg-zinc-950 p-4">
+				<appkit-button />
+			</div>
+		{/if}
 		{@render children()}
 	</div>
 {:else}

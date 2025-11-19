@@ -5,11 +5,14 @@
 	import { getCards, getTransactions } from '$lib/gnosisPay';
 	import type { Card, Transaction } from '$lib/types';
 	import { CreditCard, ExternalLink, ArrowRight } from 'lucide-svelte';
+	import { hideAppkitButton } from '$lib/stores/ui';
 
 	let cards: Card[] = $state([]);
 	let transactions: Transaction[] = $state([]);
 	let selectedCardIndex = $state(0);
 	let loading = $state(true);
+
+	let recentTransactionsRef = $state<HTMLDivElement>();
 
 	onMount(async () => {
 		try {
@@ -21,6 +24,25 @@
 		} finally {
 			loading = false;
 		}
+	});
+
+	$effect(() => {
+		if (!recentTransactionsRef) return;
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				const isSticky = entry.boundingClientRect.top <= 0;
+				hideAppkitButton.set(isSticky);
+			},
+			{ threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+		);
+
+		observer.observe(recentTransactionsRef);
+
+		return () => {
+			observer.disconnect();
+			hideAppkitButton.set(false);
+		};
 	});
 
 	function formatAmount(cents: string): string {
@@ -100,7 +122,10 @@
 						</div>
 					</div>
 
-					<div class="mb-4 flex items-center justify-between">
+					<div
+						bind:this={recentTransactionsRef}
+						class="sticky top-0 z-20 mb-4 flex items-center justify-between bg-zinc-950 pt-4 pb-2"
+					>
 						<h2 class="text-lg font-semibold">Recent Transactions</h2>
 						<div class="text-sm text-zinc-500">{transactions.length} total</div>
 					</div>
