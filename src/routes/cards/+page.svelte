@@ -58,104 +58,109 @@
 				</a>
 			</div>
 
-			{#if loading}
-				<div class="space-y-4">
-					<div class="h-48 animate-pulse rounded-2xl bg-zinc-800"></div>
-					{#each Array(5) as _}
-						<div class="h-20 animate-pulse rounded-xl bg-zinc-800"></div>
-					{/each}
-				</div>
-			{:else}
-				<div class="mb-6 overflow-x-auto">
-					<div class="flex gap-4 pb-2">
-						{#each cards as card, i}
-							<button
-								onclick={() => (selectedCardIndex = i)}
-								class="relative min-w-[280px] overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 shadow-xl transition-all {selectedCardIndex ===
-								i
-									? 'scale-105 ring-2 ring-emerald-400'
-									: 'scale-95 opacity-60'}"
-							>
-								<div class="mb-8 flex items-start justify-between">
-									<CreditCard class="h-8 w-8 text-white" />
-									<div class="rounded bg-white/20 px-2 py-1 text-xs font-semibold text-white">
-										{card.type}
-									</div>
-								</div>
-								<div class="space-y-2">
-									<div class="font-mono text-xl tracking-wider text-white">
-										•••• {card.last4Digits}
-									</div>
-									<div class="flex justify-between text-sm text-white/90">
-										<span>{card.cardholderName}</span>
-										<span
-											>{card.expiryMonth.toString().padStart(2, '0')}/{card.expiryYear % 100}</span
-										>
-									</div>
-								</div>
-							</button>
+			<div class="px-6 pb-6">
+				{#if loading}
+					<div class="space-y-4">
+						<div class="h-48 animate-pulse rounded-2xl bg-zinc-800"></div>
+						{#each Array(5) as _}
+							<div class="h-20 animate-pulse rounded-xl bg-zinc-800"></div>
 						{/each}
 					</div>
-				</div>
-
-				<div class="mb-4 flex items-center justify-between">
-					<h2 class="text-lg font-semibold">Recent Transactions</h2>
-					<div class="text-sm text-zinc-500">{transactions.length} total</div>
-				</div>
-
-				<div class="space-y-3 overflow-scroll">
-					{#each transactions as tx}
-						<div class="rounded-xl bg-zinc-900 p-4 shadow-lg transition-all hover:bg-zinc-800">
-							<div class="flex items-start justify-between">
-								<div class="flex-1">
-									<div class="mb-1 flex items-center gap-2">
-										<div class="font-semibold">{tx.merchant.name}</div>
-										{#if tx.status === 'PENDING'}
+				{:else}
+					<div class="scrollbar-hide mb-6 overflow-x-auto">
+						<div class="flex gap-4 pb-2">
+							{#each cards as card, i}
+								<button
+									onclick={() => (selectedCardIndex = i)}
+									class="relative min-w-[280px] overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 shadow-xl transition-all {selectedCardIndex ===
+									i
+										? 'scale-105 ring-2 ring-emerald-400'
+										: 'scale-95 opacity-60'}"
+								>
+									<div class="mb-8 flex items-start justify-between">
+										<CreditCard class="h-8 w-8 text-white" />
+										<div class="rounded bg-white/20 px-2 py-1 text-xs font-semibold text-white">
+											{card.type}
+										</div>
+									</div>
+									<div class="space-y-2">
+										<div class="font-mono text-xl tracking-wider text-white">
+											•••• {card.last4Digits}
+										</div>
+										<div class="flex justify-between text-sm text-white/90">
+											<span>{card.cardholderName}</span>
 											<span
-												class="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs text-yellow-500"
+												>{card.expiryMonth.toString().padStart(2, '0')}/{card.expiryYear %
+													100}</span
 											>
-												Pending
-											</span>
+										</div>
+									</div>
+								</button>
+							{/each}
+						</div>
+					</div>
+
+					<div class="mb-4 flex items-center justify-between">
+						<h2 class="text-lg font-semibold">Recent Transactions</h2>
+						<div class="text-sm text-zinc-500">{transactions.length} total</div>
+					</div>
+
+					<div class="scrollbar-hide space-y-3 overflow-y-auto">
+						{#each transactions as tx}
+							<div class="rounded-xl bg-zinc-900 p-4 shadow-lg transition-all hover:bg-zinc-800">
+								<div class="flex items-start justify-between">
+									<div class="flex-1">
+										<div class="mb-1 flex items-center gap-2">
+											<div class="font-semibold">{tx.merchant.name}</div>
+											{#if tx.status === 'PENDING'}
+												<span
+													class="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs text-yellow-500"
+												>
+													Pending
+												</span>
+											{/if}
+										</div>
+										<div class="mb-2 text-sm text-zinc-400">
+											{#if tx.merchant.city}{tx.merchant.city},
+											{/if}{tx.merchant.country}
+											• {formatDate(tx.transactionDate)}
+										</div>
+										{#if parseInt(tx.cashbackAmount.value) > 0}
+											<div class="text-xs text-emerald-400">
+												+{formatAmount(tx.cashbackAmount.value)} cashback
+											</div>
 										{/if}
 									</div>
-									<div class="mb-2 text-sm text-zinc-400">
-										{#if tx.merchant.city}{tx.merchant.city},
-										{/if}{tx.merchant.country}
-										• {formatDate(tx.transactionDate)}
-									</div>
-									{#if parseInt(tx.cashbackAmount.value) > 0}
-										<div class="text-xs text-emerald-400">
-											+{formatAmount(tx.cashbackAmount.value)} cashback
+									<div class="flex flex-col items-end gap-2">
+										<div class="text-lg font-bold text-red-400">
+											{formatAmount(tx.amount.value)}
 										</div>
-									{/if}
-								</div>
-								<div class="flex flex-col items-end gap-2">
-									<div class="text-lg font-bold text-red-400">{formatAmount(tx.amount.value)}</div>
-									<button
-										onclick={() => handleSplit(tx.id)}
-										class="flex items-center gap-1 rounded-lg bg-emerald-500 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-emerald-600"
-									>
-										Split
-										<ArrowRight class="h-3 w-3" />
-									</button>
+										<button
+											onclick={() => handleSplit(tx.id)}
+											class="flex items-center gap-1 rounded-lg bg-emerald-500 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-emerald-600"
+										>
+											Split
+											<ArrowRight class="h-3 w-3" />
+										</button>
+									</div>
 								</div>
 							</div>
-						</div>
-					{/each}
-				</div>
+						{/each}
+					</div>
 
-				<div class="mt-6 rounded-xl bg-zinc-900/50 p-4 text-center text-sm text-zinc-500">
-					<p>
-						Mock mode active. Real Gnosis Pay cards require KYC at
-						<a
-							href="https://gnosispay.com"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="text-emerald-400 hover:underline">gnosispay.com</a
-						>
-					</p>
-				</div>
-			{/if}
+					<div class="mt-6 rounded-xl bg-zinc-900/50 p-4 text-center text-sm text-zinc-500">
+						<p>
+							Mock mode active. Real Gnosis Pay cards require KYC at
+							<a
+								href="https://gnosispay.com"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="text-emerald-400 hover:underline">gnosispay.com</a
+							>
+						</p>
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
 </AuthGuard>
