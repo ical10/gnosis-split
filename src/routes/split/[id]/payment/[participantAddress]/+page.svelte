@@ -10,6 +10,11 @@
 	import { getWalletClient } from '@wagmi/core';
 	import { parseEther, type Address } from 'viem';
 	import { config } from '$lib/appkit';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { toast } from 'svelte-sonner';
 
 	let split = $state<Split | null>(null);
 	let participant = $state<Participant | null>(null);
@@ -81,7 +86,7 @@
 		try {
 			const walletClient = await getWalletClient(config);
 			if (!walletClient) {
-				alert('Please connect your wallet');
+				toast.error('Please connect your wallet');
 				paying = false;
 				return;
 			}
@@ -99,13 +104,17 @@
 			}));
 
 			isPaid = true;
-			alert('Payment successful! 🎉');
+			toast.success('Payment successful! 🎉', {
+				description: 'Your payment has been recorded on-chain'
+			});
 		} catch (error: unknown) {
 			console.error('Payment failed:', error);
 			if (error && typeof error === 'object' && 'message' in error) {
-				alert(`Payment failed: ${(error as { message: string }).message}`);
+				toast.error('Payment failed', {
+					description: (error as { message: string }).message
+				});
 			} else {
-				alert('Payment failed. Please try again.');
+				toast.error('Payment failed. Please try again.');
 			}
 		} finally {
 			paying = false;
@@ -115,106 +124,111 @@
 
 <AuthGuard>
 	{#if split && participant}
-		<div class="min-h-screen bg-zinc-950 pb-24">
+		<div class="min-h-screen pb-24">
 			<div class="p-6">
-				<button
-					onclick={() => goto(`/split/${split.id}`)}
-					class="mb-6 flex items-center gap-2 text-sm text-zinc-400 hover:text-white"
+				<Button
+					onclick={() => split && goto(`/split/${split.id}`)}
+					variant="ghost"
+					size="sm"
+					class="mb-6 -ml-3 gap-2"
 				>
 					<ArrowLeft class="h-4 w-4" />
 					Back to Split
-				</button>
+				</Button>
 
 				<div class="mb-6">
 					<h1 class="mb-2 text-2xl font-bold">Payment Details</h1>
-					<p class="text-zinc-400">{split.description}</p>
+					<p class="text-muted-foreground">{split.description}</p>
 				</div>
 
-				<div class="mb-6 rounded-xl bg-zinc-900 p-6">
-					<div class="mb-4 flex items-center gap-3">
-						<img
-							src={getAvatarUrl(participant.address)}
-							alt="Avatar"
-							class="h-16 w-16 rounded-full"
-						/>
-						<div class="flex-1">
-							{#if participant.name}
-								<div class="mb-1 text-lg font-medium">{participant.name}</div>
-							{/if}
-							<div class="text-sm text-zinc-400">
-								{shortenAddress(participant.address)}
+				<Card.Root class="mb-6">
+					<Card.Content class="p-6">
+						<div class="mb-4 flex items-center gap-3">
+							<Avatar.Root class="h-16 w-16">
+								<Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
+								<Avatar.Fallback>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback>
+							</Avatar.Root>
+							<div class="flex-1">
+								{#if participant.name}
+									<div class="mb-1 text-lg font-medium">{participant.name}</div>
+								{/if}
+								<div class="text-sm text-muted-foreground">
+									{shortenAddress(participant.address)}
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="mb-4 border-t border-zinc-800 pt-4">
-						<div class="mb-2 text-sm text-zinc-400">Amount to Pay</div>
-						<div class="text-4xl font-bold text-emerald-400">
-							{formatAmount(participant.amount)}
+						<div class="mb-4 border-t pt-4">
+							<div class="mb-2 text-sm text-muted-foreground">Amount to Pay</div>
+							<div class="text-4xl font-bold text-primary">
+								{formatAmount(participant.amount)}
+							</div>
 						</div>
-					</div>
 
-					<div class="border-t border-zinc-800 pt-4">
-						<div class="mb-2 text-sm text-zinc-400">Pay to</div>
-						<div class="text-sm">{shortenAddress(split.payerAddress)}</div>
-					</div>
-				</div>
+						<div class="border-t pt-4">
+							<div class="mb-2 text-sm text-muted-foreground">Pay to</div>
+							<div class="text-sm">{shortenAddress(split.payerAddress)}</div>
+						</div>
+					</Card.Content>
+				</Card.Root>
 
 				{#if isPaid}
-					<div
-						class="mb-6 flex items-center justify-center gap-3 rounded-xl bg-emerald-500/20 p-6 text-emerald-400"
-					>
-						<CircleCheck class="h-6 w-6" />
-						<span class="text-lg font-semibold">Payment Completed</span>
-					</div>
+					<Card.Root class="mb-6 border-primary/50 bg-primary/10">
+						<Card.Content class="flex items-center justify-center gap-3 p-6 text-primary">
+							<CircleCheck class="h-6 w-6" />
+							<span class="text-lg font-semibold">Payment Completed</span>
+						</Card.Content>
+					</Card.Root>
 				{:else if isConnectedParticipant}
-					<button
-						onclick={payMyShare}
-						disabled={paying}
-						class="w-full rounded-lg bg-emerald-500 px-6 py-4 text-lg font-semibold transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
-					>
+					<Button onclick={payMyShare} disabled={paying} size="lg" class="w-full">
 						{#if paying}
 							Processing Payment...
 						{:else}
 							Pay My Share ({formatAmount(participant.amount)})
 						{/if}
-					</button>
+					</Button>
 
-					<p class="mt-3 text-center text-sm text-zinc-500">
+					<p class="mt-3 text-center text-sm text-muted-foreground">
 						Payment will be sent in xDAI on Gnosis Chiado (testnet)
 					</p>
 				{:else}
-					<div class="rounded-xl bg-yellow-500/10 p-6 text-center">
-						<p class="mb-3 text-yellow-400">
-							Connect with the participant's wallet to make payment
-						</p>
-						<p class="text-sm text-zinc-400">
-							Wallet address: {shortenAddress(participant.address)}
-						</p>
-					</div>
+					<Card.Root class="border-yellow-500/20 bg-yellow-500/10">
+						<Card.Content class="p-6 text-center">
+							<p class="mb-3 text-yellow-400">
+								Connect with the participant's wallet to make payment
+							</p>
+							<p class="text-sm text-muted-foreground">
+								Wallet address: {shortenAddress(participant.address)}
+							</p>
+						</Card.Content>
+					</Card.Root>
 				{/if}
 
-				<div class="mt-6 rounded-xl bg-zinc-900 p-4">
-					<div class="mb-2 text-sm font-medium text-zinc-400">Split Information</div>
-					<div class="space-y-2 text-sm">
-						<div class="flex justify-between">
-							<span class="text-zinc-500">Date</span>
-							<span>{formatDate(split.date)}</span>
+				<Card.Root class="mt-6">
+					<Card.Header>
+						<Card.Title class="text-sm">Split Information</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						<div class="space-y-2 text-sm">
+							<div class="flex justify-between">
+								<span class="text-muted-foreground">Date</span>
+								<span>{formatDate(split.date)}</span>
+							</div>
+							<div class="flex justify-between">
+								<span class="text-muted-foreground">Total Amount</span>
+								<span>{formatAmount(split.totalAmount)}</span>
+							</div>
+							<div class="flex justify-between">
+								<span class="text-muted-foreground">Participants</span>
+								<span>{split.participants.length}</span>
+							</div>
+							<div class="flex justify-between">
+								<span class="text-muted-foreground">Paid</span>
+								<span>{split.payments.length}/{split.participants.length}</span>
+							</div>
 						</div>
-						<div class="flex justify-between">
-							<span class="text-zinc-500">Total Amount</span>
-							<span>{formatAmount(split.totalAmount)}</span>
-						</div>
-						<div class="flex justify-between">
-							<span class="text-zinc-500">Participants</span>
-							<span>{split.participants.length}</span>
-						</div>
-						<div class="flex justify-between">
-							<span class="text-zinc-500">Paid</span>
-							<span>{split.payments.length}/{split.participants.length}</span>
-						</div>
-					</div>
-				</div>
+					</Card.Content>
+				</Card.Root>
 			</div>
 		</div>
 	{/if}

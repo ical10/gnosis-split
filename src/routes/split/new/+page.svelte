@@ -16,6 +16,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Card from '$lib/components/ui/card';
 	import * as Avatar from '$lib/components/ui/avatar';
+	import { toast } from 'svelte-sonner';
 
 	const publicClient = createPublicClient({
 		chain: mainnet,
@@ -66,25 +67,25 @@
 			} else if (input.endsWith('.eth')) {
 				const ensAddress = await publicClient.getEnsAddress({ name: input });
 				if (!ensAddress) {
-					alert('ENS name not found');
+					toast.error('ENS name not found');
 					resolving = false;
 					return;
 				}
 				resolvedAddress = ensAddress;
 			} else {
-				alert('Invalid address or ENS name');
+				toast.error('Invalid address or ENS name');
 				resolving = false;
 				return;
 			}
 
 			if (participants.some((p) => p.address.toLowerCase() === resolvedAddress.toLowerCase())) {
-				alert('Participant already added');
+				toast.error('Participant already added');
 				resolving = false;
 				return;
 			}
 
 			if (participants.length >= 10) {
-				alert('Maximum 10 participants allowed');
+				toast.error('Maximum 10 participants allowed');
 				resolving = false;
 				return;
 			}
@@ -100,7 +101,7 @@
 			newParticipantAddress = '';
 		} catch (error) {
 			console.error('Failed to resolve address:', error);
-			alert('Failed to resolve address');
+			toast.error('Failed to resolve address');
 		} finally {
 			resolving = false;
 		}
@@ -131,23 +132,23 @@
 
 	async function createSplit() {
 		if (!description.trim()) {
-			alert('Please enter a description');
+			toast.error('Please enter a description');
 			return;
 		}
 
 		const amountNum = parseFloat(amount);
 		if (isNaN(amountNum) || amountNum <= 0) {
-			alert('Please enter a valid amount');
+			toast.error('Please enter a valid amount');
 			return;
 		}
 
 		if (participants.length === 0) {
-			alert('Please add at least one participant');
+			toast.error('Please add at least one participant');
 			return;
 		}
 
 		if (!$address) {
-			alert('Wallet not connected');
+			toast.error('Wallet not connected');
 			return;
 		}
 
@@ -168,10 +169,11 @@
 				sourceTxId
 			});
 
+			toast.success('Split created successfully!');
 			goto(`/split/${splitId}`);
 		} catch (error) {
 			console.error('Failed to create split:', error);
-			alert('Failed to create split');
+			toast.error('Failed to create split');
 		} finally {
 			loading = false;
 		}
@@ -210,7 +212,7 @@
 
 				<div class="space-y-2">
 					<Label for="participant">
-						Add Participants <sup class="text-muted-foreground text-xs font-light"
+						Add Participants <sup class="text-xs font-light text-muted-foreground"
 							>*Ethereum mainnet only</sup
 						>
 					</Label>
@@ -238,7 +240,7 @@
 							{/if}
 						</Button>
 					</div>
-					<p class="text-muted-foreground mt-1 text-xs">
+					<p class="mt-1 text-xs text-muted-foreground">
 						Max 10 participants. Enter Ethereum address or ENS name.
 					</p>
 				</div>
@@ -259,7 +261,7 @@
 										<div class="flex-1 overflow-hidden">
 											{#if participant.name}
 												<div class="font-medium">{participant.name}</div>
-												<div class="text-muted-foreground truncate text-xs">
+												<div class="truncate text-xs text-muted-foreground">
 													{participant.address}
 												</div>
 											{:else}
@@ -297,7 +299,7 @@
 													`${participant.address.slice(0, 6)}...${participant.address.slice(-4)}`}
 											</span>
 										</div>
-										<span class="text-primary font-semibold"
+										<span class="font-semibold text-primary"
 											>{formatAmount(participant.amount)}</span
 										>
 									</div>

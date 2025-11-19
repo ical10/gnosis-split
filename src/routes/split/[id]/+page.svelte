@@ -14,6 +14,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Avatar from '$lib/components/ui/avatar';
+	import { toast } from 'svelte-sonner';
 
 	let split = $state<Split | null>(null);
 	let paying = $state(false);
@@ -74,7 +75,7 @@
 
 		const myPart = getMyParticipant();
 		if (!myPart) {
-			alert('You are not a participant in this split');
+			toast.error('You are not a participant in this split');
 			return;
 		}
 
@@ -83,7 +84,7 @@
 		try {
 			const walletClient = await getWalletClient(config);
 			if (!walletClient) {
-				alert('Please connect your wallet');
+				toast.error('Please connect your wallet');
 				paying = false;
 				return;
 			}
@@ -101,13 +102,17 @@
 			}));
 
 			loadSplit();
-			alert('Payment successful! 🎉');
+			toast.success('Payment successful! 🎉', {
+				description: 'Your payment has been recorded on-chain'
+			});
 		} catch (error: unknown) {
 			console.error('Payment failed:', error);
 			if (error && typeof error === 'object' && 'message' in error) {
-				alert(`Payment failed: ${(error as { message: string }).message}`);
+				toast.error('Payment failed', {
+					description: (error as { message: string }).message
+				});
 			} else {
-				alert('Payment failed. Please try again.');
+				toast.error('Payment failed. Please try again.');
 			}
 		} finally {
 			paying = false;
@@ -118,12 +123,14 @@
 		if (!split) return;
 		const url = window.location.href;
 		navigator.clipboard.writeText(url);
-		alert('Split link copied! Share it with participants.');
+		toast.success('Split link copied!', {
+			description: 'Share it with participants'
+		});
 	}
 
 	function copyAddress(addr: string) {
 		navigator.clipboard.writeText(addr);
-		alert('Address copied!');
+		toast.success('Address copied!');
 	}
 
 	function getPaymentUrl(participantAddress: string): string {
@@ -155,19 +162,19 @@
 					</div>
 				</div>
 
-				<Card.Root class="border-primary from-primary to-primary/80 mb-6 bg-gradient-to-br">
+				<Card.Root class="mb-6 border-primary bg-gradient-to-br from-primary to-primary/80">
 					<Card.Content class="p-6">
-						<div class="text-primary-foreground/80 mb-2 text-sm">Total Amount</div>
-						<div class="text-primary-foreground text-4xl font-bold">
+						<div class="mb-2 text-sm text-primary-foreground/80">Total Amount</div>
+						<div class="text-4xl font-bold text-primary-foreground">
 							{formatAmount(split.totalAmount)}
 						</div>
-						<div class="text-primary-foreground/80 mt-4 text-sm">
+						<div class="mt-4 text-sm text-primary-foreground/80">
 							Paid by: {shortenAddress(split.payerAddress)}
 							<Button
 								onclick={() => split && copyAddress(split.payerAddress)}
 								variant="ghost"
 								size="sm"
-								class="bg-primary-foreground/20 hover:bg-primary-foreground/30 ml-2 h-auto gap-1 px-2 py-1"
+								class="ml-2 h-auto gap-1 bg-primary-foreground/20 px-2 py-1 hover:bg-primary-foreground/30"
 							>
 								<Copy class="h-3 w-3" />
 							</Button>
@@ -202,16 +209,16 @@
 													<Badge variant="secondary" class="bg-primary/20 text-primary">You</Badge>
 												{/if}
 											</div>
-											<div class="text-muted-foreground truncate text-sm">
+											<div class="truncate text-sm text-muted-foreground">
 												{shortenAddress(participant.address)}
 											</div>
 										</div>
 										<div class="text-right">
-											<div class="text-primary mb-1 text-lg font-bold">
+											<div class="mb-1 text-lg font-bold text-primary">
 												{formatAmount(participant.amount)}
 											</div>
 											{#if isPaid}
-												<Badge variant="default" class="bg-primary/20 text-primary gap-1">
+												<Badge variant="default" class="gap-1 bg-primary/20 text-primary">
 													<CircleCheck class="h-3 w-3" />
 													Paid
 												</Badge>
@@ -242,10 +249,10 @@
 										</div>
 
 										{#if showQr === participant.address}
-											<Card.Root class="bg-background mt-3">
+											<Card.Root class="mt-3 bg-background">
 												<Card.Content class="p-4 text-center">
 													<div class="mb-2 text-sm font-medium">Share payment link</div>
-													<div class="text-muted-foreground text-xs break-all">
+													<div class="text-xs break-all text-muted-foreground">
 														{window.location.origin}{getPaymentUrl(participant.address)}
 													</div>
 												</Card.Content>
@@ -267,7 +274,7 @@
 						{/if}
 					</Button>
 
-					<p class="text-muted-foreground mt-3 text-center text-sm">
+					<p class="mt-3 text-center text-sm text-muted-foreground">
 						Payment will be sent in xDAI on Gnosis Chiado (testnet)
 					</p>
 				{/if}
