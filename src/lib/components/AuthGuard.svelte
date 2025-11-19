@@ -33,13 +33,13 @@
 	<div class="flex min-h-[80vh] items-center justify-center">
 		<div class="text-center">
 			<Spinner class="mx-auto h-12 w-12" />
-			<p class="text-muted-foreground mt-4">Checking connection...</p>
+			<p class="mt-4 text-muted-foreground">Checking connection...</p>
 		</div>
 	</div>
 {:else if $isConnected}
 	<div class="flex flex-col">
 		{#if !$hideAppkitButton}
-			<div class="bg-background sticky top-0 z-10 flex justify-end border-b bg-zinc-950 p-4">
+			<div class="sticky top-0 z-10 flex justify-end border-b bg-background p-4">
 				<appkit-button></appkit-button>
 			</div>
 		{/if}
@@ -49,7 +49,7 @@
 	<div class="flex min-h-[80vh] items-center justify-center p-6">
 		<div class="max-w-md text-center">
 			<h1 class="mb-4 text-3xl font-bold">Connect Your Wallet</h1>
-			<p class="text-muted-foreground mb-6">Please connect your wallet to access this page</p>
+			<p class="mb-6 text-muted-foreground">Please connect your wallet to access this page</p>
 			<Button onclick={() => appKit?.open()} size="lg">Connect Wallet</Button>
 		</div>
 	</div>

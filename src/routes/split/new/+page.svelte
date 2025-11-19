@@ -7,7 +7,7 @@
 	import { saveSplit } from '$lib/storage';
 	import { address } from '$lib/stores/wallet';
 	import type { Participant } from '$lib/types';
-	import { Plus, X } from 'lucide-svelte';
+	import { Plus, X, ArrowLeft } from 'lucide-svelte';
 	import { isAddress, getAddress } from 'viem';
 	import { mainnet } from 'viem/chains';
 	import { createPublicClient, http } from 'viem';
@@ -16,6 +16,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Card from '$lib/components/ui/card';
 	import * as Avatar from '$lib/components/ui/avatar';
+	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { toast } from 'svelte-sonner';
 
 	const publicClient = createPublicClient({
@@ -29,23 +30,29 @@
 	let participants = $state<Participant[]>([]);
 	let newParticipantAddress = $state('');
 	let loading = $state(false);
+	let loadingTransaction = $state(false);
 	let resolving = $state(false);
 	let sourceTxId = $state<string | undefined>(undefined);
 
-	onMount(async () => {
+	onMount(() => {
 		const txId = $page.url.searchParams.get('txId');
 		if (txId) {
-			try {
-				const tx = await getTransactionById(txId);
-				if (tx) {
-					description = tx.merchant.name;
-					amount = (Math.abs(parseInt(tx.amount.value)) / 100).toFixed(2);
-					date = new Date(tx.transactionDate).toISOString().split('T')[0];
-					sourceTxId = txId;
-				}
-			} catch (error) {
-				console.error('Failed to load transaction:', error);
-			}
+			loadingTransaction = true;
+			getTransactionById(txId)
+				.then((tx) => {
+					if (tx) {
+						description = tx.merchant.name;
+						amount = (Math.abs(parseInt(tx.amount.value)) / 100).toFixed(2);
+						date = new Date(tx.transactionDate).toISOString().split('T')[0];
+						sourceTxId = txId;
+					}
+				})
+				.catch((error) => {
+					console.error('Failed to load transaction:', error);
+				})
+				.finally(() => {
+					loadingTransaction = false;
+				});
 		}
 	});
 
@@ -185,143 +192,166 @@
 </script>
 
 <AuthGuard>
-	<div class="min-h-screen bg-zinc-950 pb-24">
+	<div class="min-h-screen pb-24">
 		<div class="p-6">
-			<h1 class="mb-6 text-2xl font-bold">New Split</h1>
+			<div class="mb-6 flex items-center gap-4">
+				<Button variant="ghost" size="icon" onclick={() => window.history.back()}>
+					<ArrowLeft class="h-5 w-5" />
+				</Button>
+				<h1 class="text-2xl font-bold">New Split</h1>
+			</div>
 
-			<div class="space-y-6">
-				<div class="space-y-2">
-					<Label for="description">Description</Label>
-					<Input
-						id="description"
-						type="text"
-						bind:value={description}
-						placeholder="e.g. Dinner at Restaurant"
-					/>
-				</div>
-
-				<div class="space-y-2">
-					<Label for="amount">Total Amount (€)</Label>
-					<Input id="amount" type="number" step="0.01" bind:value={amount} placeholder="0.00" />
-				</div>
-
-				<div class="space-y-2">
-					<Label for="date">Date</Label>
-					<Input id="date" type="date" bind:value={date} />
-				</div>
-
-				<div class="space-y-2">
-					<Label for="participant">
-						Add Participants <sup class="text-xs font-light text-muted-foreground"
-							>*Ethereum mainnet only</sup
-						>
-					</Label>
-					<div class="flex gap-2">
-						<Input
-							id="participant"
-							type="text"
-							bind:value={newParticipantAddress}
-							placeholder="0x... or vitalik.eth"
-							onkeydown={(e) => e.key === 'Enter' && addParticipant()}
-							disabled={resolving}
-							class="flex-1"
-						/>
-						<Button
-							onclick={addParticipant}
-							disabled={resolving || !newParticipantAddress.trim()}
-							size="icon"
-						>
-							{#if resolving}
-								<div
-									class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-								></div>
-							{:else}
-								<Plus class="h-5 w-5" />
-							{/if}
-						</Button>
-					</div>
-					<p class="mt-1 text-xs text-muted-foreground">
-						Max 10 participants. Enter Ethereum address or ENS name.
-					</p>
-				</div>
-
-				{#if participants.length > 0}
+			{#if loadingTransaction}
+				<div class="space-y-6">
 					<div class="space-y-2">
-						<h3 class="text-sm font-medium">Participants ({participants.length})</h3>
-						<div class="space-y-2">
-							{#each participants as participant, i}
-								<Card.Root class="p-3">
-									<div class="flex items-center gap-3">
-										<Avatar.Root class="h-10 w-10">
-											<Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
-											<Avatar.Fallback
-												>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
-											>
-										</Avatar.Root>
-										<div class="flex-1 overflow-hidden">
-											{#if participant.name}
-												<div class="font-medium">{participant.name}</div>
-												<div class="truncate text-xs text-muted-foreground">
-													{participant.address}
-												</div>
-											{:else}
-												<div class="truncate text-sm">{participant.address}</div>
-											{/if}
-										</div>
-										<Button onclick={() => removeParticipant(i)} variant="ghost" size="icon-sm">
-											<X class="h-4 w-4" />
-										</Button>
-									</div>
-								</Card.Root>
-							{/each}
-						</div>
+						<Skeleton class="h-4 w-24" />
+						<Skeleton class="h-10 w-full" />
 					</div>
-				{/if}
+					<div class="space-y-2">
+						<Skeleton class="h-4 w-32" />
+						<Skeleton class="h-10 w-full" />
+					</div>
+					<div class="space-y-2">
+						<Skeleton class="h-4 w-16" />
+						<Skeleton class="h-10 w-full" />
+					</div>
+					<p class="text-center text-sm text-muted-foreground">Loading transaction details...</p>
+				</div>
+			{:else}
+				<div class="space-y-6">
+					<div class="space-y-2">
+						<Label for="description">Description</Label>
+						<Input
+							id="description"
+							type="text"
+							bind:value={description}
+							placeholder="e.g. Dinner at Restaurant"
+						/>
+					</div>
 
-				{#if calculatedParticipants.length > 0}
-					<Card.Root>
-						<Card.Header>
-							<Card.Title class="text-sm">Split Preview (Equal Split)</Card.Title>
-						</Card.Header>
-						<Card.Content>
+					<div class="space-y-2">
+						<Label for="amount">Total Amount (€)</Label>
+						<Input id="amount" type="number" step="0.01" bind:value={amount} placeholder="0.00" />
+					</div>
+
+					<div class="space-y-2">
+						<Label for="date">Date</Label>
+						<Input id="date" type="date" bind:value={date} />
+					</div>
+
+					<div class="space-y-2">
+						<Label for="participant">
+							Add Participants <sup class="text-xs font-light text-muted-foreground"
+								>*Ethereum mainnet only</sup
+							>
+						</Label>
+						<div class="flex gap-2">
+							<Input
+								id="participant"
+								type="text"
+								bind:value={newParticipantAddress}
+								placeholder="0x... or vitalik.eth"
+								onkeydown={(e) => e.key === 'Enter' && addParticipant()}
+								disabled={resolving}
+								class="flex-1"
+							/>
+							<Button
+								onclick={addParticipant}
+								disabled={resolving || !newParticipantAddress.trim()}
+								size="icon"
+							>
+								{#if resolving}
+									<div
+										class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+									></div>
+								{:else}
+									<Plus class="h-5 w-5" />
+								{/if}
+							</Button>
+						</div>
+						<p class="mt-1 text-xs text-muted-foreground">
+							Max 10 participants. Enter Ethereum address or ENS name.
+						</p>
+					</div>
+
+					{#if participants.length > 0}
+						<div class="space-y-2">
+							<h3 class="text-sm font-medium">Participants ({participants.length})</h3>
 							<div class="space-y-2">
-								{#each calculatedParticipants as participant}
-									<div class="flex items-center justify-between">
-										<div class="flex items-center gap-2">
-											<Avatar.Root class="h-6 w-6">
+								{#each participants as participant, i}
+									<Card.Root class="p-3">
+										<div class="flex items-center gap-3">
+											<Avatar.Root class="h-10 w-10">
 												<Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
 												<Avatar.Fallback
 													>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
 												>
 											</Avatar.Root>
-											<span class="text-sm">
-												{participant.name ||
-													`${participant.address.slice(0, 6)}...${participant.address.slice(-4)}`}
-											</span>
+											<div class="flex-1 overflow-hidden">
+												{#if participant.name}
+													<div class="font-medium">{participant.name}</div>
+													<div class="truncate text-xs text-muted-foreground">
+														{participant.address}
+													</div>
+												{:else}
+													<div class="truncate text-sm">{participant.address}</div>
+												{/if}
+											</div>
+											<Button onclick={() => removeParticipant(i)} variant="ghost" size="icon-sm">
+												<X class="h-4 w-4" />
+											</Button>
 										</div>
-										<span class="font-semibold text-primary"
-											>{formatAmount(participant.amount)}</span
-										>
-									</div>
+									</Card.Root>
 								{/each}
 							</div>
-						</Card.Content>
-					</Card.Root>
-				{/if}
-
-				<Button
-					onclick={createSplit}
-					disabled={loading || !description.trim() || !amount || participants.length === 0}
-					size="lg"
-					class="w-full"
-				>
-					{#if loading}
-						Creating Split...
-					{:else}
-						Create Split
+						</div>
 					{/if}
-				</Button>
-			</div>
+
+					{#if calculatedParticipants.length > 0}
+						<Card.Root>
+							<Card.Header>
+								<Card.Title class="text-sm">Split Preview (Equal Split)</Card.Title>
+							</Card.Header>
+							<Card.Content>
+								<div class="space-y-2">
+									{#each calculatedParticipants as participant}
+										<div class="flex items-center justify-between">
+											<div class="flex items-center gap-2">
+												<Avatar.Root class="h-6 w-6">
+													<Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
+													<Avatar.Fallback
+														>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
+													>
+												</Avatar.Root>
+												<span class="text-sm">
+													{participant.name ||
+														`${participant.address.slice(0, 6)}...${participant.address.slice(-4)}`}
+												</span>
+											</div>
+											<span class="font-semibold text-primary"
+												>{formatAmount(participant.amount)}</span
+											>
+										</div>
+									{/each}
+								</div>
+							</Card.Content>
+						</Card.Root>
+					{/if}
+
+					<Button
+						onclick={createSplit}
+						disabled={loading || !description.trim() || !amount || participants.length === 0}
+						size="lg"
+						class="w-full"
+					>
+						{#if loading}
+							Creating Split...
+						{:else}
+							Create Split
+						{/if}
+					</Button>
+				</div>
+			{/if}
 		</div>
 	</div>
 </AuthGuard>

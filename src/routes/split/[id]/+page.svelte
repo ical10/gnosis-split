@@ -26,6 +26,11 @@
 
 	function loadSplit() {
 		const id = $page.params.id;
+		if (!id) {
+			goto('/cards');
+			return;
+		}
+
 		const loaded = getSplit(id);
 		if (!loaded) {
 			goto('/splits');
