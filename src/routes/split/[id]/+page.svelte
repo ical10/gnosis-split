@@ -4,13 +4,16 @@
 	import { goto } from '$app/navigation';
 	import AuthGuard from '$lib/components/AuthGuard.svelte';
 	import { getSplit, updateSplit } from '$lib/storage';
-	import { address as walletAddress, selectedNetworkId } from '$lib/stores/wallet';
+	import { address as walletAddress } from '$lib/stores/wallet';
 	import type { Split, Participant } from '$lib/types';
 	import { CircleCheck, Clock, Copy, QrCode, Share2 } from 'lucide-svelte';
 	import { getWalletClient } from '@wagmi/core';
 	import { parseEther, type Address } from 'viem';
-	import { gnosis, gnosisChiado } from 'viem/chains';
 	import { config } from '$lib/appkit';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Avatar from '$lib/components/ui/avatar';
 
 	let split = $state<Split | null>(null);
 	let paying = $state(false);
@@ -138,42 +141,39 @@
 		<div class="min-h-screen bg-zinc-950 pb-24">
 			<div class="p-6">
 				<div class="mb-6">
-					<button
-						onclick={() => goto('/splits')}
-						class="mb-4 text-sm text-zinc-400 hover:text-white"
-					>
+					<Button onclick={() => goto('/splits')} variant="ghost" size="sm" class="mb-4 -ml-3">
 						← Back to Splits
-					</button>
+					</Button>
 					<div class="mb-2 flex items-start justify-between gap-3">
 						<div class="flex-1">
 							<h1 class="mb-2 text-2xl font-bold">{split.description}</h1>
-							<p class="text-zinc-400">{formatDate(split.date)}</p>
+							<p class="text-muted-foreground">{formatDate(split.date)}</p>
 						</div>
-						<button
-							onclick={copyLink}
-							class="rounded-lg bg-zinc-800 p-3 transition-colors hover:bg-zinc-700"
-							title="Share split link"
-						>
+						<Button onclick={copyLink} variant="outline" size="icon" title="Share split link">
 							<Share2 class="h-5 w-5" />
-						</button>
+						</Button>
 					</div>
 				</div>
 
-				<div
-					class="mb-6 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 shadow-xl"
-				>
-					<div class="mb-2 text-sm text-white/80">Total Amount</div>
-					<div class="text-4xl font-bold text-white">{formatAmount(split.totalAmount)}</div>
-					<div class="mt-4 text-sm text-white/80">
-						Paid by: {shortenAddress(split.payerAddress)}
-						<button
-							onclick={() => copyAddress(split.payerAddress)}
-							class="ml-2 inline-flex items-center gap-1 rounded bg-white/20 px-2 py-1 transition-colors hover:bg-white/30"
-						>
-							<Copy class="h-3 w-3" />
-						</button>
-					</div>
-				</div>
+				<Card.Root class="border-primary from-primary to-primary/80 mb-6 bg-gradient-to-br">
+					<Card.Content class="p-6">
+						<div class="text-primary-foreground/80 mb-2 text-sm">Total Amount</div>
+						<div class="text-primary-foreground text-4xl font-bold">
+							{formatAmount(split.totalAmount)}
+						</div>
+						<div class="text-primary-foreground/80 mt-4 text-sm">
+							Paid by: {shortenAddress(split.payerAddress)}
+							<Button
+								onclick={() => split && copyAddress(split.payerAddress)}
+								variant="ghost"
+								size="sm"
+								class="bg-primary-foreground/20 hover:bg-primary-foreground/30 ml-2 h-auto gap-1 px-2 py-1"
+							>
+								<Copy class="h-3 w-3" />
+							</Button>
+						</div>
+					</Card.Content>
+				</Card.Root>
 
 				<div class="mb-6">
 					<h2 class="mb-4 text-lg font-semibold">
@@ -184,94 +184,90 @@
 						{#each split.participants as participant}
 							{@const isPaid = isParticipantPaid(participant.address)}
 							{@const isMe = $walletAddress?.toLowerCase() === participant.address.toLowerCase()}
-							<div class="rounded-xl bg-zinc-900 p-4">
-								<div class="flex items-center gap-3">
-									<img
-										src={getAvatarUrl(participant.address)}
-										alt="Avatar"
-										class="h-12 w-12 rounded-full"
-									/>
-									<div class="flex-1 overflow-hidden">
-										<div class="flex items-center gap-2">
-											{#if participant.name}
-												<div class="font-medium">{participant.name}</div>
-											{/if}
-											{#if isMe}
-												<span
-													class="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400"
-												>
-													You
-												</span>
-											{/if}
+							<Card.Root>
+								<Card.Content class="p-4">
+									<div class="flex items-center gap-3">
+										<Avatar.Root class="h-12 w-12">
+											<Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
+											<Avatar.Fallback
+												>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
+											>
+										</Avatar.Root>
+										<div class="flex-1 overflow-hidden">
+											<div class="flex items-center gap-2">
+												{#if participant.name}
+													<div class="font-medium">{participant.name}</div>
+												{/if}
+												{#if isMe}
+													<Badge variant="secondary" class="bg-primary/20 text-primary">You</Badge>
+												{/if}
+											</div>
+											<div class="text-muted-foreground truncate text-sm">
+												{shortenAddress(participant.address)}
+											</div>
 										</div>
-										<div class="truncate text-sm text-zinc-400">
-											{shortenAddress(participant.address)}
+										<div class="text-right">
+											<div class="text-primary mb-1 text-lg font-bold">
+												{formatAmount(participant.amount)}
+											</div>
+											{#if isPaid}
+												<Badge variant="default" class="bg-primary/20 text-primary gap-1">
+													<CircleCheck class="h-3 w-3" />
+													Paid
+												</Badge>
+											{:else}
+												<Badge variant="secondary" class="gap-1 bg-yellow-500/20 text-yellow-500">
+													<Clock class="h-3 w-3" />
+													Unpaid
+												</Badge>
+											{/if}
 										</div>
 									</div>
-									<div class="text-right">
-										<div class="mb-1 text-lg font-bold text-emerald-400">
-											{formatAmount(participant.amount)}
+
+									{#if !isPaid && !isMe}
+										<div class="mt-3 flex gap-2">
+											<Button
+												onclick={() =>
+													(showQr = showQr === participant.address ? null : participant.address)}
+												variant="outline"
+												size="sm"
+												class="flex-1 gap-1"
+											>
+												<QrCode class="h-4 w-4" />
+												QR Code
+											</Button>
+											<Button href={getPaymentUrl(participant.address)} variant="outline" size="sm">
+												View Payment
+											</Button>
 										</div>
-										{#if isPaid}
-											<div class="flex items-center gap-1 text-xs text-emerald-500">
-												<CircleCheck class="h-4 w-4" />
-												Paid
-											</div>
-										{:else}
-											<div class="flex items-center gap-1 text-xs text-yellow-500">
-												<Clock class="h-4 w-4" />
-												Unpaid
-											</div>
+
+										{#if showQr === participant.address}
+											<Card.Root class="bg-background mt-3">
+												<Card.Content class="p-4 text-center">
+													<div class="mb-2 text-sm font-medium">Share payment link</div>
+													<div class="text-muted-foreground text-xs break-all">
+														{window.location.origin}{getPaymentUrl(participant.address)}
+													</div>
+												</Card.Content>
+											</Card.Root>
 										{/if}
-									</div>
-								</div>
-
-								{#if !isPaid && !isMe}
-									<div class="mt-3 flex gap-2">
-										<button
-											onclick={() =>
-												(showQr = showQr === participant.address ? null : participant.address)}
-											class="flex-1 rounded-lg bg-zinc-800 px-3 py-2 text-sm transition-colors hover:bg-zinc-700"
-										>
-											<QrCode class="mr-1 inline h-4 w-4" />
-											QR Code
-										</button>
-										<a
-											href={getPaymentUrl(participant.address)}
-											class="flex items-center gap-1 rounded-lg bg-zinc-800 px-3 py-2 text-sm transition-colors hover:bg-zinc-700"
-										>
-											View Payment
-										</a>
-									</div>
-
-									{#if showQr === participant.address}
-										<div class="mt-3 rounded-lg bg-white p-4 text-center">
-											<div class="mb-2 text-sm font-medium text-zinc-900">Share payment link</div>
-											<div class="text-xs break-all text-zinc-600">
-												{window.location.origin}{getPaymentUrl(participant.address)}
-											</div>
-										</div>
 									{/if}
-								{/if}
-							</div>
+								</Card.Content>
+							</Card.Root>
 						{/each}
 					</div>
 				</div>
 
 				{#if canPayMyShare()}
-					<button
-						onclick={payMyShare}
-						disabled={paying}
-						class="w-full rounded-lg bg-emerald-500 px-6 py-4 text-lg font-semibold transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
-					>
+					<Button onclick={payMyShare} disabled={paying} size="lg" class="w-full">
 						{#if paying}
 							Processing Payment...
 						{:else}
 							Pay My Share ({formatAmount(getMyParticipant()?.amount || 0)})
 						{/if}
-					</button>
+					</Button>
 
-					<p class="mt-3 text-center text-sm text-zinc-500">
+					<p class="text-muted-foreground mt-3 text-center text-sm">
 						Payment will be sent in xDAI on Gnosis Chiado (testnet)
 					</p>
 				{/if}

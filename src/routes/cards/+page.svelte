@@ -6,6 +6,10 @@
 	import type { Card, Transaction } from '$lib/types';
 	import { CreditCard, ExternalLink, ArrowRight } from 'lucide-svelte';
 	import { hideAppkitButton } from '$lib/stores/ui';
+	import { Button } from '$lib/components/ui/button';
+	import * as CardUI from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Skeleton } from '$lib/components/ui/skeleton';
 
 	let cards: Card[] = $state([]);
 	let transactions: Transaction[] = $state([]);
@@ -69,23 +73,18 @@
 		<div class="p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<h1 class="text-2xl font-bold">Cards</h1>
-				<a
-					href="https://gnosispay.com"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="flex items-center gap-1 rounded-lg bg-zinc-800 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-700"
-				>
+				<Button href="https://gnosispay.com" variant="outline" size="sm" class="gap-1">
 					Get Card
 					<ExternalLink class="h-3 w-3" />
-				</a>
+				</Button>
 			</div>
 
 			<div class="px-6 pb-6">
 				{#if loading}
 					<div class="space-y-4">
-						<div class="h-48 animate-pulse rounded-2xl bg-zinc-800"></div>
+						<Skeleton class="h-48 rounded-2xl" />
 						{#each Array(5) as _}
-							<div class="h-20 animate-pulse rounded-xl bg-zinc-800"></div>
+							<Skeleton class="h-20 rounded-xl" />
 						{/each}
 					</div>
 				{:else}
@@ -132,58 +131,62 @@
 
 					<div class="scrollbar-hide space-y-3 overflow-y-auto">
 						{#each transactions as tx}
-							<div class="rounded-xl bg-zinc-900 p-4 shadow-lg transition-all hover:bg-zinc-800">
-								<div class="flex items-start justify-between">
-									<div class="flex-1">
-										<div class="mb-1 flex items-center gap-2">
-											<div class="font-semibold">{tx.merchant.name}</div>
-											{#if tx.status === 'PENDING'}
-												<span
-													class="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs text-yellow-500"
-												>
-													Pending
-												</span>
+							<CardUI.Root class="hover:bg-accent transition-all">
+								<CardUI.Content class="p-4">
+									<div class="flex items-start justify-between">
+										<div class="flex-1">
+											<div class="mb-1 flex items-center gap-2">
+												<div class="font-semibold">{tx.merchant.name}</div>
+												{#if tx.status === 'PENDING'}
+													<Badge variant="secondary" class="bg-yellow-500/20 text-yellow-500">
+														Pending
+													</Badge>
+												{/if}
+											</div>
+											<div class="text-muted-foreground mb-2 text-sm">
+												{#if tx.merchant.city}{tx.merchant.city},
+												{/if}{tx.merchant.country}
+												• {formatDate(tx.transactionDate)}
+											</div>
+											{#if parseInt(tx.cashbackAmount.value) > 0}
+												<div class="text-primary text-xs">
+													+{formatAmount(tx.cashbackAmount.value)} cashback
+												</div>
 											{/if}
 										</div>
-										<div class="mb-2 text-sm text-zinc-400">
-											{#if tx.merchant.city}{tx.merchant.city},
-											{/if}{tx.merchant.country}
-											• {formatDate(tx.transactionDate)}
-										</div>
-										{#if parseInt(tx.cashbackAmount.value) > 0}
-											<div class="text-xs text-emerald-400">
-												+{formatAmount(tx.cashbackAmount.value)} cashback
+										<div class="flex flex-col items-end gap-2">
+											<div class="text-lg font-bold text-red-400">
+												{formatAmount(tx.amount.value)}
 											</div>
-										{/if}
-									</div>
-									<div class="flex flex-col items-end gap-2">
-										<div class="text-lg font-bold text-red-400">
-											{formatAmount(tx.amount.value)}
+											<Button
+												variant="outline"
+												onclick={() => handleSplit(tx.id)}
+												size="sm"
+												class="gap-1"
+											>
+												Split
+												<ArrowRight class="h-3 w-3" />
+											</Button>
 										</div>
-										<button
-											onclick={() => handleSplit(tx.id)}
-											class="flex items-center gap-1 rounded-lg bg-emerald-500 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-emerald-600"
-										>
-											Split
-											<ArrowRight class="h-3 w-3" />
-										</button>
 									</div>
-								</div>
-							</div>
+								</CardUI.Content>
+							</CardUI.Root>
 						{/each}
 					</div>
 
-					<div class="mt-6 rounded-xl bg-zinc-900/50 p-4 text-center text-sm text-zinc-500">
-						<p>
-							Mock mode active. Real Gnosis Pay cards require KYC at
-							<a
-								href="https://gnosispay.com"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-emerald-400 hover:underline">gnosispay.com</a
-							>
-						</p>
-					</div>
+					<CardUI.Root class="bg-muted/50 mt-6">
+						<CardUI.Content class="text-muted-foreground p-4 text-center text-sm">
+							<p>
+								Mock mode active. Real Gnosis Pay cards require KYC at
+								<a
+									href="https://gnosispay.com"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-primary hover:underline">gnosispay.com</a
+								>
+							</p>
+						</CardUI.Content>
+					</CardUI.Root>
 				{/if}
 			</div>
 		</div>

@@ -5,6 +5,9 @@
 	import { getSplits } from '$lib/storage';
 	import type { Split } from '$lib/types';
 	import { Receipt, CircleCheck, Clock } from 'lucide-svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
 
 	let splits = $state<Split[]>([]);
 
@@ -47,51 +50,54 @@
 
 			{#if splits.length === 0}
 				<div class="mt-12 flex flex-col items-center justify-center text-center">
-					<div class="mb-4 rounded-full bg-zinc-900 p-6">
-						<Receipt class="h-12 w-12 text-zinc-600" />
+					<div class="bg-muted mb-4 rounded-full p-6">
+						<Receipt class="text-muted-foreground h-12 w-12" />
 					</div>
 					<h2 class="mb-2 text-xl font-semibold">No splits yet</h2>
-					<p class="mb-6 text-zinc-400">Create your first split from a transaction</p>
-					<button
-						onclick={() => goto('/cards')}
-						class="rounded-lg bg-emerald-500 px-6 py-3 font-semibold transition-colors hover:bg-emerald-600"
-					>
-						View Transactions
-					</button>
+					<p class="text-muted-foreground mb-6">Create your first split from a transaction</p>
+					<Button onclick={() => goto('/cards')} size="lg">View Transactions</Button>
 				</div>
 			{:else}
 				<div class="space-y-3">
 					{#each splits as split}
 						{@const status = getPaymentStatus(split)}
-						<button
+						<Card.Root
+							class="hover:bg-accent cursor-pointer transition-all"
 							onclick={() => handleSplitClick(split.id)}
-							class="w-full rounded-xl bg-zinc-900 p-4 text-left shadow-lg transition-all hover:bg-zinc-800"
 						>
-							<div class="mb-3 flex items-start justify-between">
-								<div class="flex-1">
-									<h3 class="mb-1 text-lg font-semibold">{split.description}</h3>
-									<p class="text-sm text-zinc-400">{formatDate(split.date)}</p>
-								</div>
-								<div class="text-right">
-									<div class="text-xl font-bold text-emerald-400">
-										{formatAmount(split.totalAmount)}
+							<Card.Content class="p-4">
+								<div class="mb-3 flex items-start justify-between">
+									<div class="flex-1">
+										<h3 class="mb-1 text-lg font-semibold">{split.description}</h3>
+										<p class="text-muted-foreground text-sm">{formatDate(split.date)}</p>
+									</div>
+									<div class="text-right">
+										<div class="text-primary text-xl font-bold">
+											{formatAmount(split.totalAmount)}
+										</div>
 									</div>
 								</div>
-							</div>
 
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2 text-sm">
-									{#if status.paid === status.total}
-										<CircleCheck class="h-4 w-4 text-emerald-500" />
-										<span class="text-emerald-500">All paid</span>
-									{:else}
-										<Clock class="h-4 w-4 text-yellow-500" />
-										<span class="text-yellow-500">{status.paid}/{status.total} paid</span>
-									{/if}
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-2 text-sm">
+										{#if status.paid === status.total}
+											<Badge variant="default" class="bg-primary/20 text-primary gap-1">
+												<CircleCheck class="h-3 w-3" />
+												All paid
+											</Badge>
+										{:else}
+											<Badge variant="secondary" class="gap-1 bg-yellow-500/20 text-yellow-500">
+												<Clock class="h-3 w-3" />
+												{status.paid}/{status.total} paid
+											</Badge>
+										{/if}
+									</div>
+									<div class="text-muted-foreground text-sm">
+										{split.participants.length} participants
+									</div>
 								</div>
-								<div class="text-sm text-zinc-500">{split.participants.length} participants</div>
-							</div>
-						</button>
+							</Card.Content>
+						</Card.Root>
 					{/each}
 				</div>
 			{/if}

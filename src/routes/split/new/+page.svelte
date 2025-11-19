@@ -11,6 +11,11 @@
 	import { isAddress, getAddress } from 'viem';
 	import { mainnet } from 'viem/chains';
 	import { createPublicClient, http } from 'viem';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Card from '$lib/components/ui/card';
+	import * as Avatar from '$lib/components/ui/avatar';
 
 	const publicClient = createPublicClient({
 		chain: mainnet,
@@ -183,58 +188,46 @@
 			<h1 class="mb-6 text-2xl font-bold">New Split</h1>
 
 			<div class="space-y-6">
-				<div>
-					<label for="description" class="mb-2 block text-sm font-medium">Description</label>
-					<input
+				<div class="space-y-2">
+					<Label for="description">Description</Label>
+					<Input
 						id="description"
 						type="text"
 						bind:value={description}
 						placeholder="e.g. Dinner at Restaurant"
-						class="w-full rounded-lg bg-zinc-900 px-4 py-3 ring-1 ring-zinc-800 transition-all outline-none focus:ring-2 focus:ring-emerald-500"
 					/>
 				</div>
 
-				<div>
-					<label for="amount" class="mb-2 block text-sm font-medium">Total Amount (€)</label>
-					<input
-						id="amount"
-						type="number"
-						step="0.01"
-						bind:value={amount}
-						placeholder="0.00"
-						class="w-full rounded-lg bg-zinc-900 px-4 py-3 ring-1 ring-zinc-800 transition-all outline-none focus:ring-2 focus:ring-emerald-500"
-					/>
+				<div class="space-y-2">
+					<Label for="amount">Total Amount (€)</Label>
+					<Input id="amount" type="number" step="0.01" bind:value={amount} placeholder="0.00" />
 				</div>
 
-				<div>
-					<label for="date" class="mb-2 block text-sm font-medium">Date</label>
-					<input
-						id="date"
-						type="date"
-						bind:value={date}
-						class="w-full rounded-lg bg-zinc-900 px-4 py-3 ring-1 ring-zinc-800 transition-all outline-none focus:ring-2 focus:ring-emerald-500"
-					/>
+				<div class="space-y-2">
+					<Label for="date">Date</Label>
+					<Input id="date" type="date" bind:value={date} />
 				</div>
 
-				<div>
-					<label class="mb-2 block text-sm font-medium"
-						>Add Participants <sup class="text-xs font-light text-gray-400"
+				<div class="space-y-2">
+					<Label for="participant">
+						Add Participants <sup class="text-muted-foreground text-xs font-light"
 							>*Ethereum mainnet only</sup
-						></label
-					>
+						>
+					</Label>
 					<div class="flex gap-2">
-						<input
+						<Input
+							id="participant"
 							type="text"
 							bind:value={newParticipantAddress}
 							placeholder="0x... or vitalik.eth"
 							onkeydown={(e) => e.key === 'Enter' && addParticipant()}
 							disabled={resolving}
-							class="flex-1 rounded-lg bg-zinc-900 px-4 py-3 ring-1 ring-zinc-800 transition-all outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+							class="flex-1"
 						/>
-						<button
+						<Button
 							onclick={addParticipant}
 							disabled={resolving || !newParticipantAddress.trim()}
-							class="rounded-lg bg-emerald-500 px-4 py-3 font-semibold transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+							size="icon"
 						>
 							{#if resolving}
 								<div
@@ -243,81 +236,89 @@
 							{:else}
 								<Plus class="h-5 w-5" />
 							{/if}
-						</button>
+						</Button>
 					</div>
-					<p class="mt-1 text-xs text-zinc-500">
+					<p class="text-muted-foreground mt-1 text-xs">
 						Max 10 participants. Enter Ethereum address or ENS name.
 					</p>
 				</div>
 
 				{#if participants.length > 0}
-					<div>
-						<h3 class="mb-3 text-sm font-medium">Participants ({participants.length})</h3>
+					<div class="space-y-2">
+						<h3 class="text-sm font-medium">Participants ({participants.length})</h3>
 						<div class="space-y-2">
 							{#each participants as participant, i}
-								<div class="flex items-center gap-3 rounded-lg bg-zinc-900 p-3">
-									<img
-										src={getAvatarUrl(participant.address)}
-										alt="Avatar"
-										class="h-10 w-10 rounded-full"
-									/>
-									<div class="flex-1 overflow-hidden">
-										{#if participant.name}
-											<div class="font-medium">{participant.name}</div>
-											<div class="truncate text-xs text-zinc-500">{participant.address}</div>
-										{:else}
-											<div class="truncate text-sm">{participant.address}</div>
-										{/if}
+								<Card.Root class="p-3">
+									<div class="flex items-center gap-3">
+										<Avatar.Root class="h-10 w-10">
+											<Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
+											<Avatar.Fallback
+												>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
+											>
+										</Avatar.Root>
+										<div class="flex-1 overflow-hidden">
+											{#if participant.name}
+												<div class="font-medium">{participant.name}</div>
+												<div class="text-muted-foreground truncate text-xs">
+													{participant.address}
+												</div>
+											{:else}
+												<div class="truncate text-sm">{participant.address}</div>
+											{/if}
+										</div>
+										<Button onclick={() => removeParticipant(i)} variant="ghost" size="icon-sm">
+											<X class="h-4 w-4" />
+										</Button>
 									</div>
-									<button
-										onclick={() => removeParticipant(i)}
-										class="rounded-lg p-2 transition-colors hover:bg-zinc-800"
-									>
-										<X class="h-4 w-4 text-zinc-400" />
-									</button>
-								</div>
+								</Card.Root>
 							{/each}
 						</div>
 					</div>
 				{/if}
 
 				{#if calculatedParticipants.length > 0}
-					<div class="rounded-xl bg-zinc-900 p-4">
-						<h3 class="mb-3 text-sm font-medium">Split Preview (Equal Split)</h3>
-						<div class="space-y-2">
-							{#each calculatedParticipants as participant}
-								<div class="flex items-center justify-between">
-									<div class="flex items-center gap-2">
-										<img
-											src={getAvatarUrl(participant.address)}
-											alt="Avatar"
-											class="h-6 w-6 rounded-full"
-										/>
-										<span class="text-sm">
-											{participant.name ||
-												`${participant.address.slice(0, 6)}...${participant.address.slice(-4)}`}
-										</span>
+					<Card.Root>
+						<Card.Header>
+							<Card.Title class="text-sm">Split Preview (Equal Split)</Card.Title>
+						</Card.Header>
+						<Card.Content>
+							<div class="space-y-2">
+								{#each calculatedParticipants as participant}
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<Avatar.Root class="h-6 w-6">
+												<Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
+												<Avatar.Fallback
+													>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
+												>
+											</Avatar.Root>
+											<span class="text-sm">
+												{participant.name ||
+													`${participant.address.slice(0, 6)}...${participant.address.slice(-4)}`}
+											</span>
+										</div>
+										<span class="text-primary font-semibold"
+											>{formatAmount(participant.amount)}</span
+										>
 									</div>
-									<span class="font-semibold text-emerald-400"
-										>{formatAmount(participant.amount)}</span
-									>
-								</div>
-							{/each}
-						</div>
-					</div>
+								{/each}
+							</div>
+						</Card.Content>
+					</Card.Root>
 				{/if}
 
-				<button
+				<Button
 					onclick={createSplit}
 					disabled={loading || !description.trim() || !amount || participants.length === 0}
-					class="w-full rounded-lg bg-emerald-500 px-6 py-4 text-lg font-semibold transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+					size="lg"
+					class="w-full"
 				>
 					{#if loading}
 						Creating Split...
 					{:else}
 						Create Split
 					{/if}
-				</button>
+				</Button>
 			</div>
 		</div>
 	</div>
