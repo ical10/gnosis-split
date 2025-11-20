@@ -50,11 +50,11 @@
 
 			{#if splits.length === 0}
 				<div class="mt-12 flex flex-col items-center justify-center text-center">
-					<div class="bg-muted mb-4 rounded-full p-6">
-						<Receipt class="text-muted-foreground h-12 w-12" />
+					<div class="mb-4 rounded-full bg-muted p-6">
+						<Receipt class="h-12 w-12 text-muted-foreground" />
 					</div>
 					<h2 class="mb-2 text-xl font-semibold">No splits yet</h2>
-					<p class="text-muted-foreground mb-6">Create your first split from a transaction</p>
+					<p class="mb-6 text-muted-foreground">Create your first split from a transaction</p>
 					<Button onclick={() => goto('/cards')} size="lg">View Transactions</Button>
 				</div>
 			{:else}
@@ -62,17 +62,17 @@
 					{#each splits as split}
 						{@const status = getPaymentStatus(split)}
 						<Card.Root
-							class="hover:bg-accent cursor-pointer transition-all"
+							class="cursor-pointer transition-all hover:bg-muted"
 							onclick={() => handleSplitClick(split.id)}
 						>
 							<Card.Content class="p-4">
 								<div class="mb-3 flex items-start justify-between">
 									<div class="flex-1">
 										<h3 class="mb-1 text-lg font-semibold">{split.description}</h3>
-										<p class="text-muted-foreground text-sm">{formatDate(split.date)}</p>
+										<p class="text-sm text-muted-foreground">{formatDate(split.date)}</p>
 									</div>
 									<div class="text-right">
-										<div class="text-primary text-xl font-bold">
+										<div class="text-xl font-bold text-primary">
 											{formatAmount(split.totalAmount)}
 										</div>
 									</div>
@@ -81,7 +81,7 @@
 								<div class="flex items-center justify-between">
 									<div class="flex items-center gap-2 text-sm">
 										{#if status.paid === status.total}
-											<Badge variant="default" class="bg-primary/20 text-primary gap-1">
+											<Badge variant="default" class="gap-1 bg-primary/20 text-primary">
 												<CircleCheck class="h-3 w-3" />
 												All paid
 											</Badge>
@@ -92,7 +92,7 @@
 											</Badge>
 										{/if}
 									</div>
-									<div class="text-muted-foreground text-sm">
+									<div class="text-sm text-muted-foreground">
 										{split.participants.length} participants
 									</div>
 								</div>
