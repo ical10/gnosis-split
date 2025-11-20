@@ -3,28 +3,28 @@ import { browser } from '$app/environment';
 import { appKit } from '$lib/appkit';
 
 export const appKitStore = writable({
-	open: false,
-	selectedNetworkId: undefined as string | undefined,
-	address: undefined as string | undefined,
-	isConnected: false
+  open: false,
+  selectedNetworkId: undefined as string | undefined,
+  address: undefined as string | undefined,
+  isConnected: false
 });
 
 if (browser && appKit) {
-	appKit.subscribeState((state) => {
-		appKitStore.update((current) => ({
-			...current,
-			open: state.open,
-			selectedNetworkId: state.selectedNetworkId
-		}));
-	});
+  appKit.subscribeState((state) => {
+    appKitStore.update((current) => ({
+      ...current,
+      open: state.open,
+      selectedNetworkId: state.selectedNetworkId
+    }));
+  });
 
-	appKit.subscribeAccount((account) => {
-		appKitStore.update((current) => ({
-			...current,
-			address: account.address,
-			isConnected: account.isConnected
-		}));
-	});
+  appKit.subscribeAccount((account) => {
+    appKitStore.update((current) => ({
+      ...current,
+      address: account.address,
+      isConnected: account.isConnected
+    }));
+  });
 }
 
 export const isConnected = derived(appKitStore, ($state) => $state.isConnected);
