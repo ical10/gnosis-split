@@ -23,6 +23,7 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/vite": "^4.1.14",
 		"@types/node": "^22",
+		"@types/qrcode": "^1.5.6",
 		"bits-ui": "^2.14.4",
 		"clsx": "^2.1.1",
 		"eslint": "^9.38.0",
@@ -48,6 +49,7 @@
 		"@reown/appkit-adapter-wagmi": "^1.8.14",
 		"@wagmi/core": "^2.22.1",
 		"lucide-svelte": "^0.554.0",
+		"qrcode": "^1.5.4",
 		"viem": "^2.39.0",
 		"wagmi": "^2.19.4"
 	}

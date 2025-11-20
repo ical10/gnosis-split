@@ -7,6 +7,8 @@
 	import { address as walletAddress } from '$lib/stores/wallet';
 	import type { Split, Participant } from '$lib/types';
 	import { CircleCheck, Clock, Copy, QrCode, Share2 } from 'lucide-svelte';
+	import { generateQRCode } from '$lib/utils';
+	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { getWalletClient } from '@wagmi/core';
 	import { parseEther, type Address } from 'viem';
 	import { config } from '$lib/appkit';
@@ -254,14 +256,47 @@
 										</div>
 
 										{#if showQr === participant.address}
-											<Card.Root class="mt-3 bg-background">
-												<Card.Content class="p-4 text-center">
-													<div class="mb-2 text-sm font-medium">Share payment link</div>
-													<div class="text-xs break-all text-muted-foreground">
-														{window.location.origin}{getPaymentUrl(participant.address)}
-													</div>
-												</Card.Content>
-											</Card.Root>
+											{#await generateQRCode(`${window.location.origin}${getPaymentUrl(participant.address)}`)}
+												<Card.Root class="mt-3 bg-background">
+													<Card.Content class="p-4 text-center">
+														<Spinner class="mx-auto h-8 w-8" />
+													</Card.Content>
+												</Card.Root>
+											{:then qrDataUrl}
+												<Card.Root class="mt-3 bg-white">
+													<Card.Content class="p-4">
+														<h2 class="mb-3 text-center font-bold text-zinc-900">
+															Scan to pay {formatAmount(participant.amount)}
+														</h2>
+														<img src={qrDataUrl} alt="Payment QR Code" class="mx-auto h-48 w-48" />
+														<div class="mt-3 text-center">
+															<div class="mb-2 text-xs break-all text-zinc-600">
+																{window.location.origin}{getPaymentUrl(participant.address)}
+															</div>
+															<Button
+																onclick={() => {
+																	navigator.clipboard.writeText(
+																		`${window.location.origin}${getPaymentUrl(participant.address)}`
+																	);
+																	toast.success('Payment link copied!');
+																}}
+																variant="secondary"
+																size="sm"
+																class="gap-1"
+															>
+																<Copy class="h-3 w-3" />
+																Copy Link
+															</Button>
+														</div>
+													</Card.Content>
+												</Card.Root>
+											{:catch error}
+												<Card.Root class="mt-3 bg-destructive/10">
+													<Card.Content class="p-4 text-center text-sm text-destructive">
+														Failed to generate QR code
+													</Card.Content>
+												</Card.Root>
+											{/await}
 										{/if}
 									{/if}
 								</Card.Content>
