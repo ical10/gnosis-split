@@ -69,12 +69,17 @@
 </script>
 
 <AuthGuard>
-  <div class="min-h-screen bg-zinc-950 pb-24">
+  <div class="min-h-screen bg-black pb-24">
     <div class="p-6">
-      <div class="mb-6 flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Cards</h1>
-        <Button href="https://gnosispay.com" variant="outline" size="sm" class="gap-1">
-          Get Card
+      <div class="mb-6 flex items-center justify-between border-b border-primary/20 pb-4">
+        <h1 class="font-mono text-xl font-bold tracking-wider text-primary uppercase">[Cards]</h1>
+        <Button
+          href="https://gnosispay.com"
+          variant="outline"
+          size="sm"
+          class="gap-1 border-primary/50 font-mono text-xs uppercase hover:border-primary hover:shadow-primary/30"
+        >
+          Get_Card
           <ExternalLink class="h-3 w-3" />
         </Button>
       </div>
@@ -93,30 +98,33 @@
               {#each cards as card, i}
                 <button
                   onclick={() => (selectedCardIndex = i)}
-                  class="relative min-w-[280px] flex-shrink-0 overflow-hidden rounded-2xl shadow-xl transition-all {selectedCardIndex ===
+                  class="relative min-w-[280px] flex-shrink-0 overflow-hidden border transition-all {selectedCardIndex ===
                   i
-                    ? 'scale-90 ring-2 ring-primary'
-                    : 'scale-80 opacity-60'} {i === cards.length - 1 ? 'mr-4' : ''}"
-                  style="background-image: url('/credit-card-background-hd.png'); background-size: cover; background-position: center;"
+                    ? 'scale-90 border-primary shadow-lg shadow-primary/50'
+                    : 'scale-80 border-primary/30 opacity-60'} {i === cards.length - 1
+                    ? 'mr-4'
+                    : ''}"
                 >
                   <div
-                    class="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/40"
-                    style="box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.1);"
+                    class="absolute inset-0 bg-gradient-to-br from-black via-card to-black"
+                  ></div>
+                  <div
+                    class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(var(--color-primary)/0.1),transparent_50%)]"
                   ></div>
                   <div class="relative z-10 p-6">
                     <div class="mb-8 flex items-start justify-between">
-                      <CreditCard class="h-8 w-8 text-white drop-shadow-lg" />
+                      <CreditCard class="h-8 w-8 text-primary" />
                       <div
-                        class="rounded bg-white/20 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm"
+                        class="border border-primary/50 bg-black/50 px-2 py-1 font-mono text-xs text-primary uppercase"
                       >
                         {card.type}
                       </div>
                     </div>
                     <div class="space-y-2">
-                      <div class="font-mono text-xl tracking-wider text-white drop-shadow-lg">
+                      <div class="font-mono text-xl tracking-wider text-primary">
                         •••• {card.last4Digits}
                       </div>
-                      <div class="flex justify-between text-sm text-white/90 drop-shadow">
+                      <div class="flex justify-between font-mono text-sm text-muted-foreground">
                         <span>{card.cardholderName}</span>
                         <span
                           >{card.expiryMonth.toString().padStart(2, '0')}/{card.expiryYear %
@@ -132,46 +140,54 @@
 
           <div
             bind:this={recentTransactionsRef}
-            class="sticky top-0 z-20 mb-4 flex items-center justify-between bg-zinc-950 pt-4 pb-2"
+            class="sticky top-0 z-20 mb-4 flex items-center justify-between border-b border-primary/20 bg-black pt-4 pb-2"
           >
-            <h2 class="text-lg font-semibold">Recent Transactions</h2>
-            <div class="text-sm text-zinc-500">{transactions.length} total</div>
+            <h2 class="font-mono text-sm font-semibold tracking-wider text-primary uppercase">
+              [Transactions]
+            </h2>
+            <div class="font-mono text-xs text-muted-foreground">{transactions.length} total</div>
           </div>
 
           <div class="scrollbar-hide space-y-3 overflow-y-auto">
             {#each transactions as tx}
-              <CardUI.Root>
+              <CardUI.Root
+                class="border-primary/20 bg-card/50 transition-all hover:border-primary/40 hover:shadow-sm hover:shadow-primary/20"
+              >
                 <CardUI.Content class="p-4">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <div class="mb-1 flex items-center gap-2">
-                        <div class="font-semibold">{tx.merchant.name}</div>
+                        <div class="font-mono text-sm font-semibold">{tx.merchant.name}</div>
                         {#if tx.status === 'PENDING'}
-                          <Badge variant="secondary" class="bg-yellow-500/20 text-yellow-500">
+                          <Badge
+                            variant="secondary"
+                            class="border-yellow-500/30 bg-yellow-500/10 font-mono text-[10px] text-yellow-500 uppercase"
+                          >
                             Pending
                           </Badge>
                         {/if}
                       </div>
-                      <div class="mb-2 text-sm text-muted-foreground">
+                      <div class="mb-2 font-mono text-xs text-muted-foreground">
                         {#if tx.merchant.city}{tx.merchant.city},
                         {/if}{tx.merchant.country}
-                        • {formatDate(tx.transactionDate)}
+                        <span class="text-primary/50">•</span>
+                        {formatDate(tx.transactionDate)}
                       </div>
                       {#if parseInt(tx.cashbackAmount.value) > 0}
-                        <div class="text-xs text-primary">
+                        <div class="font-mono text-xs text-primary">
                           +{formatAmount(tx.cashbackAmount.value)} cashback
                         </div>
                       {/if}
                     </div>
                     <div class="flex flex-col items-end gap-2">
-                      <div class="text-lg font-bold text-red-400">
+                      <div class="font-mono text-lg font-bold text-destructive">
                         {formatAmount(tx.amount.value)}
                       </div>
                       <Button
                         variant="outline"
                         onclick={() => handleSplit(tx.id)}
                         size="sm"
-                        class="gap-1"
+                        class="gap-1 border-primary/50 font-mono text-xs uppercase hover:border-primary hover:shadow-primary/30"
                       >
                         Split
                         <ArrowRight class="h-3 w-3" />
@@ -183,10 +199,10 @@
             {/each}
           </div>
 
-          <CardUI.Root class="mt-6 bg-muted/50">
-            <CardUI.Content class="p-4 text-center text-sm text-muted-foreground">
+          <CardUI.Root class="mt-6 border-primary/20 bg-card/50">
+            <CardUI.Content class="p-4 text-center font-mono text-xs text-muted-foreground">
               <p>
-                Mock mode active. Real Gnosis Pay cards require KYC at
+                <span class="text-primary">[MOCK_MODE]</span> Real cards require KYC at
                 <a
                   href="https://gnosispay.com"
                   target="_blank"

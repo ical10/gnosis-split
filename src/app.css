@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,6 +12,18 @@
     background-color: var(--background);
     color: var(--foreground);
     letter-spacing: var(--tracking-normal);
+    font-family: 'Space Mono', monospace;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 }
 
@@ -146,68 +159,58 @@
 }
 
 .dark {
-  --background: oklch(0.2497 0.0305 234.1628);
-  --foreground: oklch(0.9306 0.0197 349.0785);
-  --card: oklch(0.2902 0.0299 233.5352);
-  --card-foreground: oklch(0.9306 0.0197 349.0785);
-  --popover: oklch(0.2902 0.0299 233.5352);
-  --popover-foreground: oklch(0.9306 0.0197 349.0785);
-  --primary: oklch(0.9195 0.0801 87.667);
-  --primary-foreground: oklch(0.2497 0.0305 234.1628);
-  --secondary: oklch(0.7794 0.0803 4.133);
-  --secondary-foreground: oklch(0.2497 0.0305 234.1628);
-  --muted: oklch(0.2713 0.0086 255.578);
-  --muted-foreground: oklch(0.7794 0.0803 4.133);
-  --accent: oklch(0.6699 0.0988 356.9762);
-  --accent-foreground: oklch(0.9306 0.0197 349.0785);
-  --destructive: oklch(0.6702 0.1806 350.3599);
-  --destructive-foreground: oklch(0.2497 0.0305 234.1628);
-  --border: oklch(0.3907 0.0399 242.2181);
-  --input: oklch(0.3093 0.0305 232.0027);
-  --ring: oklch(0.6998 0.0896 201.8672);
-  --chart-1: oklch(0.6998 0.0896 201.8672);
-  --chart-2: oklch(0.7794 0.0803 4.133);
-  --chart-3: oklch(0.6699 0.0988 356.9762);
-  --chart-4: oklch(0.4408 0.0702 217.0848);
-  --chart-5: oklch(0.2713 0.0086 255.578);
-  --radius: 0.4rem;
-  --sidebar: oklch(0.2303 0.027 235.9743);
-  --sidebar-foreground: oklch(0.967 0.0029 264.5419);
-  --sidebar-primary: oklch(0.6559 0.2118 354.3084);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.8228 0.1095 346.0184);
-  --sidebar-accent-foreground: oklch(0.2781 0.0296 256.848);
-  --sidebar-border: oklch(0.3729 0.0306 259.7328);
-  --sidebar-ring: oklch(0.6559 0.2118 354.3084);
-  --font-sans: Poppins, sans-serif;
-  --font-serif: Roboto Serif, ui-serif, serif;
+  --background: oklch(0.08 0.01 264);
+  --foreground: oklch(0.95 0.02 140);
+  --card: oklch(0.12 0.015 264);
+  --card-foreground: oklch(0.95 0.02 140);
+  --popover: oklch(0.12 0.015 264);
+  --popover-foreground: oklch(0.95 0.02 140);
+  --primary: oklch(0.75 0.19 140);
+  --primary-foreground: oklch(0.08 0.01 264);
+  --secondary: oklch(0.85 0.15 85);
+  --secondary-foreground: oklch(0.08 0.01 264);
+  --muted: oklch(0.18 0.02 264);
+  --muted-foreground: oklch(0.6 0.03 140);
+  --accent: oklch(0.7 0.18 140);
+  --accent-foreground: oklch(0.08 0.01 264);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.95 0.02 140);
+  --border: oklch(0.22 0.03 264);
+  --input: oklch(0.15 0.02 264);
+  --ring: oklch(0.75 0.19 140);
+  --chart-1: oklch(0.75 0.19 140);
+  --chart-2: oklch(0.85 0.15 85);
+  --chart-3: oklch(0.7 0.18 140);
+  --chart-4: oklch(0.6 0.15 170);
+  --chart-5: oklch(0.5 0.12 190);
+  --radius: 0.3rem;
+  --sidebar: oklch(0.1 0.015 264);
+  --sidebar-foreground: oklch(0.95 0.02 140);
+  --sidebar-primary: oklch(0.75 0.19 140);
+  --sidebar-primary-foreground: oklch(0.08 0.01 264);
+  --sidebar-accent: oklch(0.7 0.18 140);
+  --sidebar-accent-foreground: oklch(0.08 0.01 264);
+  --sidebar-border: oklch(0.22 0.03 264);
+  --sidebar-ring: oklch(0.75 0.19 140);
+  --font-sans: 'Space Mono', monospace;
+  --font-serif: 'Space Mono', monospace;
   --font-mono: 'Space Mono', monospace;
-  --shadow-color: #324859;
+  --shadow-color: oklch(0.75 0.19 140 / 0.3);
   --shadow-opacity: 1;
   --shadow-blur: 0px;
   --shadow-spread: 0px;
-  --shadow-offset-x: 3px;
-  --shadow-offset-y: 3px;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 0px;
   --letter-spacing: 0em;
   --spacing: 0.25rem;
-  --shadow-2xs: 3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 0.5);
-  --shadow-xs: 3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 0.5);
-  --shadow-sm:
-    3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 1),
-    3px 1px 2px -1px hsl(206.1538 28.0576% 27.2549% / 1);
-  --shadow:
-    3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 1),
-    3px 1px 2px -1px hsl(206.1538 28.0576% 27.2549% / 1);
-  --shadow-md:
-    3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 1),
-    3px 2px 4px -1px hsl(206.1538 28.0576% 27.2549% / 1);
-  --shadow-lg:
-    3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 1),
-    3px 4px 6px -1px hsl(206.1538 28.0576% 27.2549% / 1);
-  --shadow-xl:
-    3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 1),
-    3px 8px 10px -1px hsl(206.1538 28.0576% 27.2549% / 1);
-  --shadow-2xl: 3px 3px 0px 0px hsl(206.1538 28.0576% 27.2549% / 2.5);
+  --shadow-2xs: 0 0 10px oklch(0.75 0.19 140 / 0.2);
+  --shadow-xs: 0 0 15px oklch(0.75 0.19 140 / 0.3);
+  --shadow-sm: 0 0 20px oklch(0.75 0.19 140 / 0.3);
+  --shadow: 0 0 25px oklch(0.75 0.19 140 / 0.4);
+  --shadow-md: 0 0 30px oklch(0.75 0.19 140 / 0.4);
+  --shadow-lg: 0 0 40px oklch(0.75 0.19 140 / 0.5);
+  --shadow-xl: 0 0 50px oklch(0.75 0.19 140 / 0.5);
+  --shadow-2xl: 0 0 60px oklch(0.75 0.19 140 / 0.6);
 }
 
 @layer base {
@@ -219,4 +222,32 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
+
+
+@keyframes flickerAnimation {
+  0%, 100% { opacity: 1; filter: brightness(1) drop-shadow(0 0 10px var(--primary)); }
+  50%      { opacity: 0.7; filter: brightness(0.7) drop-shadow(0 0 3px var(--primary)); }
+}
+
+@-o-keyframes flickerAnimation{
+  0%, 100% { opacity: 1; filter: brightness(1) drop-shadow(0 0 10px var(--primary)); }
+  50%      { opacity: 0.7; filter: brightness(0.7) drop-shadow(0 0 3px var(--primary)); }
+}
+
+@-moz-keyframes flickerAnimation{
+  0%, 100% { opacity: 1; filter: brightness(1) drop-shadow(0 0 10px var(--primary)); }
+  50%      { opacity: 0.7; filter: brightness(0.7) drop-shadow(0 0 3px var(--primary)); }
+}
+
+@-webkit-keyframes flickerAnimation{
+  0%, 100% { opacity: 1; filter: brightness(1) drop-shadow(0 0 10px var(--primary)); }
+  50%      { opacity: 0.7; filter: brightness(0.7) drop-shadow(0 0 3px var(--primary)); }
+}
+
+.animate-flicker-slow {
+   -webkit-animation: flickerAnimation 1.5s infinite;
+   -moz-animation: flickerAnimation 1.5s infinite;
+   -o-animation: flickerAnimation 1.5s infinite;
+    animation: flickerAnimation 1.5s infinite;
 }

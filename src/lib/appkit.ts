@@ -28,7 +28,7 @@ if (browser) {
     metadata: {
       name: 'Gnosis Split',
       description: 'Split expenses with Gnosis Pay and get reimbursed on-chain',
-      url: 'https://reown.com/appkit',
+      url: 'https://gnosis-split.netlify.app',
       icons: ['https://avatars.githubusercontent.com/u/179229932?s=200&v=4']
     }
   });

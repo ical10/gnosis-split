@@ -192,13 +192,20 @@
 </script>
 
 <AuthGuard>
-  <div class="min-h-screen pb-24">
+  <div class="min-h-screen bg-black pb-24">
     <div class="p-6">
-      <div class="mb-6 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onclick={() => window.history.back()}>
-          <ArrowLeft class="h-5 w-5" />
+      <div class="mb-6 flex items-center gap-4 border-b border-primary/20 pb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onclick={() => window.history.back()}
+          class="border border-primary/30 hover:border-primary hover:bg-transparent"
+        >
+          <ArrowLeft class="h-5 w-5 text-primary" />
         </Button>
-        <h1 class="text-2xl font-bold">New Split</h1>
+        <h1 class="font-mono text-xl font-bold tracking-wider text-primary uppercase">
+          [New_Split]
+        </h1>
       </div>
 
       {#if loadingTransaction}
@@ -215,33 +222,52 @@
             <Skeleton class="h-4 w-16" />
             <Skeleton class="h-10 w-full" />
           </div>
-          <p class="text-center text-sm text-muted-foreground">Loading transaction details...</p>
+          <p class="text-center font-mono text-xs text-muted-foreground">
+            // Loading transaction details...
+          </p>
         </div>
       {:else}
         <div class="space-y-6">
           <div class="space-y-2">
-            <Label for="description">Description</Label>
+            <Label for="description" class="font-mono text-xs text-primary uppercase"
+              >Description</Label
+            >
             <Input
               id="description"
               type="text"
               bind:value={description}
               placeholder="e.g. Dinner at Restaurant"
+              class="border-primary/30 bg-card/50 font-mono focus:border-primary"
             />
           </div>
 
           <div class="space-y-2">
-            <Label for="amount">Total Amount (€)</Label>
-            <Input id="amount" type="number" step="0.01" bind:value={amount} placeholder="0.00" />
+            <Label for="amount" class="font-mono text-xs text-primary uppercase"
+              >Total Amount (€)</Label
+            >
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              bind:value={amount}
+              placeholder="0.00"
+              class="border-primary/30 bg-card/50 font-mono focus:border-primary"
+            />
           </div>
 
           <div class="space-y-2">
-            <Label for="date">Date</Label>
-            <Input id="date" type="date" bind:value={date} />
+            <Label for="date" class="font-mono text-xs text-primary uppercase">Date</Label>
+            <Input
+              id="date"
+              type="date"
+              bind:value={date}
+              class="border-primary/30 bg-card/50 font-mono focus:border-primary"
+            />
           </div>
 
           <div class="space-y-2">
-            <Label for="participant">
-              Add Participants <sup class="text-xs font-light text-muted-foreground"
+            <Label for="participant" class="font-mono text-xs text-primary uppercase">
+              Add Participants <sup class="text-[10px] font-light text-muted-foreground"
                 >*Ethereum mainnet only</sup
               >
             </Label>
@@ -253,51 +279,59 @@
                 placeholder="0x... or vitalik.eth"
                 onkeydown={(e) => e.key === 'Enter' && addParticipant()}
                 disabled={resolving}
-                class="flex-1"
+                class="flex-1 border-primary/30 bg-card/50 font-mono focus:border-primary"
               />
               <Button
                 onclick={addParticipant}
                 disabled={resolving || !newParticipantAddress.trim()}
                 size="icon"
+                class="border-primary/50 bg-black hover:border-primary hover:shadow-primary/30"
               >
                 {#if resolving}
                   <div
-                    class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                    class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
                   ></div>
                 {:else}
                   <Plus class="h-5 w-5" />
                 {/if}
               </Button>
             </div>
-            <p class="mt-1 text-xs text-muted-foreground">
-              Max 10 participants. Enter Ethereum address or ENS name.
+            <p class="mt-1 font-mono text-xs text-muted-foreground">
+              // Max 10 participants. Enter Ethereum address or ENS name.
             </p>
           </div>
 
           {#if participants.length > 0}
             <div class="space-y-2">
-              <h3 class="text-sm font-medium">Participants ({participants.length})</h3>
+              <h3 class="font-mono text-xs font-medium text-primary uppercase">
+                Participants ({participants.length})
+              </h3>
               <div class="space-y-2">
                 {#each participants as participant, i}
-                  <Card.Root class="p-3">
+                  <Card.Root class="border-primary/20 bg-card/50 p-3">
                     <div class="flex items-center gap-3">
-                      <Avatar.Root class="h-10 w-10">
+                      <Avatar.Root class="h-10 w-10 border border-primary/30">
                         <Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
-                        <Avatar.Fallback
+                        <Avatar.Fallback class="bg-card font-mono text-primary"
                           >{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
                         >
                       </Avatar.Root>
                       <div class="flex-1 overflow-hidden">
                         {#if participant.name}
-                          <div class="font-medium">{participant.name}</div>
-                          <div class="truncate text-xs text-muted-foreground">
+                          <div class="font-mono text-sm font-medium">{participant.name}</div>
+                          <div class="truncate font-mono text-xs text-muted-foreground">
                             {participant.address}
                           </div>
                         {:else}
-                          <div class="truncate text-sm">{participant.address}</div>
+                          <div class="truncate font-mono text-sm">{participant.address}</div>
                         {/if}
                       </div>
-                      <Button onclick={() => removeParticipant(i)} variant="ghost" size="icon-sm">
+                      <Button
+                        onclick={() => removeParticipant(i)}
+                        variant="ghost"
+                        size="icon-sm"
+                        class="hover:bg-destructive/20 hover:text-destructive"
+                      >
                         <X class="h-4 w-4" />
                       </Button>
                     </div>
@@ -308,27 +342,31 @@
           {/if}
 
           {#if calculatedParticipants.length > 0}
-            <Card.Root>
+            <Card.Root class="border-primary/30 bg-card/50">
               <Card.Header>
-                <Card.Title class="text-sm">Split Preview (Equal Split)</Card.Title>
+                <Card.Title class="font-mono text-sm text-primary uppercase"
+                  >[Split Preview]</Card.Title
+                >
               </Card.Header>
               <Card.Content>
                 <div class="space-y-2">
                   {#each calculatedParticipants as participant}
-                    <div class="flex items-center justify-between">
+                    <div
+                      class="flex items-center justify-between border-b border-primary/10 pb-2 last:border-0"
+                    >
                       <div class="flex items-center gap-2">
-                        <Avatar.Root class="h-6 w-6">
+                        <Avatar.Root class="h-6 w-6 border border-primary/30">
                           <Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
-                          <Avatar.Fallback
+                          <Avatar.Fallback class="bg-card font-mono text-[10px] text-primary"
                             >{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
                           >
                         </Avatar.Root>
-                        <span class="text-sm">
+                        <span class="font-mono text-xs">
                           {participant.name ||
                             `${participant.address.slice(0, 6)}...${participant.address.slice(-4)}`}
                         </span>
                       </div>
-                      <span class="font-semibold text-primary"
+                      <span class="font-mono font-semibold text-primary"
                         >{formatAmount(participant.amount)}</span
                       >
                     </div>
@@ -342,12 +380,12 @@
             onclick={createSplit}
             disabled={loading || !description.trim() || !amount || participants.length === 0}
             size="lg"
-            class="w-full"
+            class="w-full border-primary/50 bg-black font-mono tracking-wider uppercase shadow-lg shadow-primary/20 hover:border-primary hover:shadow-primary/40"
           >
             {#if loading}
-              Creating Split...
+              &gt; Creating_Split...
             {:else}
-              Create Split
+              &gt; Create_Split
             {/if}
           </Button>
         </div>

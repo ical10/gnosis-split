@@ -44,35 +44,49 @@
 </script>
 
 <AuthGuard>
-  <div class="min-h-screen bg-zinc-950 pb-24">
+  <div class="min-h-screen bg-black pb-24">
     <div class="p-6">
-      <h1 class="mb-6 text-2xl font-bold">Splits</h1>
+      <h1
+        class="mb-6 border-b border-primary/20 pb-4 font-mono text-xl font-bold tracking-wider text-primary uppercase"
+      >
+        [Splits]
+      </h1>
 
       {#if splits.length === 0}
         <div class="mt-12 flex flex-col items-center justify-center text-center">
-          <div class="mb-4 rounded-full bg-muted p-6">
-            <Receipt class="h-12 w-12 text-muted-foreground" />
+          <div class="mb-4 border border-primary/30 bg-card/50 p-6">
+            <Receipt class="h-12 w-12 text-primary/50" />
           </div>
-          <h2 class="mb-2 text-xl font-semibold">No splits yet</h2>
-          <p class="mb-6 text-muted-foreground">Create your first split from a transaction</p>
-          <Button onclick={() => goto('/cards')} size="lg">View Transactions</Button>
+          <h2 class="mb-2 font-mono text-lg font-semibold text-primary uppercase">
+            No_Splits_Found
+          </h2>
+          <p class="mb-6 font-mono text-xs text-muted-foreground">
+            // Create your first split from a transaction
+          </p>
+          <Button
+            onclick={() => goto('/cards')}
+            size="lg"
+            class="border-primary/50 bg-black font-mono uppercase hover:border-primary hover:shadow-primary/30"
+          >
+            &gt; View_Transactions
+          </Button>
         </div>
       {:else}
         <div class="space-y-3">
           {#each splits as split}
             {@const status = getPaymentStatus(split)}
             <Card.Root
-              class="cursor-pointer transition-all hover:bg-muted"
+              class="cursor-pointer border-primary/20 bg-card/50 transition-all hover:border-primary/40 hover:shadow-sm hover:shadow-primary/20"
               onclick={() => handleSplitClick(split.id)}
             >
               <Card.Content class="p-4">
                 <div class="mb-3 flex items-start justify-between">
                   <div class="flex-1">
-                    <h3 class="mb-1 text-lg font-semibold">{split.description}</h3>
-                    <p class="text-sm text-muted-foreground">{formatDate(split.date)}</p>
+                    <h3 class="mb-1 font-mono text-sm font-semibold">{split.description}</h3>
+                    <p class="font-mono text-xs text-muted-foreground">{formatDate(split.date)}</p>
                   </div>
                   <div class="text-right">
-                    <div class="text-xl font-bold text-primary">
+                    <div class="font-mono text-lg font-bold text-primary">
                       {formatAmount(split.totalAmount)}
                     </div>
                   </div>
@@ -81,18 +95,24 @@
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2 text-sm">
                     {#if status.paid === status.total}
-                      <Badge variant="default" class="gap-1 bg-primary/20 text-primary">
+                      <Badge
+                        variant="default"
+                        class="gap-1 border-primary/30 bg-primary/10 font-mono text-[10px] text-primary uppercase"
+                      >
                         <CircleCheck class="h-3 w-3" />
-                        All paid
+                        All_Paid
                       </Badge>
                     {:else}
-                      <Badge variant="secondary" class="gap-1 bg-yellow-500/20 text-yellow-500">
+                      <Badge
+                        variant="secondary"
+                        class="gap-1 border-yellow-500/30 bg-yellow-500/10 font-mono text-[10px] text-yellow-500 uppercase"
+                      >
                         <Clock class="h-3 w-3" />
-                        {status.paid}/{status.total} paid
+                        {status.paid}/{status.total}_Paid
                       </Badge>
                     {/if}
                   </div>
-                  <div class="text-sm text-muted-foreground">
+                  <div class="font-mono text-xs text-muted-foreground">
                     {split.participants.length} participants
                   </div>
                 </div>
