@@ -1,69 +1,159 @@
 import { browser } from '$app/environment';
-import type { Split } from './types';
+import type { Split, Participant } from './types';
+import { supabase } from './supabase';
 
+const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE === 'true';
 const STORAGE_KEY = 'gnosisSplits';
 
-export function getSplits(): Split[] {
-  if (!browser) return [];
+export async function getSplits(): Promise<Split[]> {
+  if (!USE_SUPABASE) {
+    if (!browser) return [];
 
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error('Failed to load splits:', error);
-    return [];
-  }
-}
-
-export function saveSplit(split: Split): void {
-  if (!browser) return;
-
-  try {
-    const splits = getSplits();
-    const existingIndex = splits.findIndex((s) => s.id === split.id);
-
-    if (existingIndex >= 0) {
-      splits[existingIndex] = split;
-    } else {
-      splits.push(split);
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Failed to load splits:', error);
+      return [];
     }
+  } else {
+    const { data } = await supabase
+      .from('splits')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!data) return [];
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
-  } catch (error) {
-    console.error('Failed to save split:', error);
-    throw error;
+    return data.map((row) => ({
+      id: row.id,
+      description: row.description,
+      totalAmount: row.total_amount,
+      date: row.date,
+      payerAddress: row.payer_address,
+      participants: row.participants as unknown as Split['participants'],
+      payments: row.payments as unknown as Split['payments'],
+      createdAt: row.created_at as unknown as Split['createdAt'],
+      sourceTxId: row.source_tx_id || undefined
+    }));
   }
 }
 
-export function getSplit(id: string): Split | undefined {
-  return getSplits().find((s) => s.id === id);
+export async function saveSplit(split: Omit<Split, 'id' | 'createdAt'>): Promise<Split> {
+  if (!USE_SUPABASE) {
+    const splits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const newSplit = { ...split, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+    splits.push(newSplit);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
+    return newSplit;
+  }
+
+  const { data, error } = await supabase
+    .from('splits')
+    .insert({
+      description: split.description,
+      total_amount: split.totalAmount,
+      date: split.date,
+      payer_address: split.payerAddress,
+      participants: split.participants as any,
+      payments: split.payments as any,
+      source_tx_id: split.sourceTxId
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    id: data.id,
+    description: data.description,
+    totalAmount: data.total_amount,
+    date: data.date,
+    payerAddress: data.payer_address,
+    participants: data.participants as unknown as Split['participants'],
+    payments: data.payments as unknown as Split['payments'],
+    createdAt: data.created_at as unknown as Split['createdAt'],
+    sourceTxId: data.source_tx_id || undefined
+  };
 }
 
-export function updateSplit(id: string, updater: (split: Split) => Split): void {
-  if (!browser) return;
+export async function getSplit(id: string): Promise<Split | undefined> {
+  const splits = await getSplits();
+  return splits.find((s) => s.id === id);
+}
 
-  try {
-    const splits = getSplits();
-    const index = splits.findIndex((s) => s.id === id);
+export async function updateSplit(id: string, updater: (split: Split) => Split): Promise<void> {
+  if (!USE_SUPABASE) {
+    if (!browser) return;
 
-    if (index >= 0) {
-      splits[index] = updater(splits[index]);
+    try {
+      const splits = await getSplits();
+      const index = splits.findIndex((s) => s.id === id);
+
+      if (index >= 0) {
+        splits[index] = updater(splits[index]);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
+      }
+    } catch (error) {
+      console.error('Failed to update split:', error);
+      throw error;
+    }
+  } else {
+    const split = await getSplit(id);
+    if (!split) return;
+
+    const updated = updater(split);
+    const { error } = await supabase
+      .from('splits')
+      .update({
+        description: updated.description,
+        total_amount: updated.totalAmount,
+        date: updated.date,
+        payer_address: updated.payerAddress,
+        participants: updated.participants as any,
+        payments: updated.payments as any,
+        source_tx_id: updated.sourceTxId
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+}
+
+export async function deleteSplit(id: string): Promise<void> {
+  if (!USE_SUPABASE) {
+    if (!browser) return;
+
+    try {
+      const splits = await getSplits();
+      const filtered = splits.filter((s) => s.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to delete split:', error);
+      throw error;
+    }
+  } else {
+    const { error } = await supabase.from('splits').delete().eq('id', id);
+    if (error) throw error;
+  }
+}
+
+export async function updateSplitParticipants(splitId: string, participants: Participant[]) {
+  if (!USE_SUPABASE) {
+    const splits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const idx = splits.findIndex((s: Split) => s.id === splitId);
+    if (idx > 0) {
+      splits[idx].participants = participants;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
     }
-  } catch (error) {
-    console.error('Failed to update split:', error);
-    throw error;
+    return;
   }
-}
 
-export function deleteSplit(id: string): void {
-  if (!browser) return;
+  const { error } = await supabase
+    .from('splits')
+    .update({ participants: participants as any })
+    .eq('id', splitId);
 
-  try {
-    const splits = getSplits().filter((s) => s.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
-  } catch (error) {
-    console.error('Failed to delete split:', error);
+  if (error) {
+    console.error('Failed to update participants', error);
     throw error;
   }
 }

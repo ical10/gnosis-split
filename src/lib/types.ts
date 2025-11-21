@@ -46,4 +46,5 @@ export interface Split {
   participants: Participant[];
   payments: { address: string; txHash?: string }[];
   sourceTxId?: string;
+  createdAt?: string;
 }
