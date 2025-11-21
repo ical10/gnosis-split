@@ -268,7 +268,7 @@
           <div class="space-y-2">
             <Label for="participant" class="font-mono text-xs text-primary uppercase">
               Add Participants <sup class="text-[10px] font-light text-muted-foreground"
-                >*Ethereum mainnet only</sup
+                >*Ethereum mainnet only for ENS</sup
               >
             </Label>
             <div class="flex gap-2">
@@ -285,11 +285,11 @@
                 onclick={addParticipant}
                 disabled={resolving || !newParticipantAddress.trim()}
                 size="icon"
-                class="border-primary/50 bg-black hover:border-primary hover:shadow-primary/30"
+                class="border-primary/50 hover:border-primary hover:shadow-primary/30"
               >
                 {#if resolving}
                   <div
-                    class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
+                    class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
                   ></div>
                 {:else}
                   <Plus class="h-5 w-5" />
@@ -345,7 +345,7 @@
             <Card.Root class="border-primary/30 bg-card/50">
               <Card.Header>
                 <Card.Title class="font-mono text-sm text-primary uppercase"
-                  >[Split Preview]</Card.Title
+                  >[Split Preview - Equal Split]</Card.Title
                 >
               </Card.Header>
               <Card.Content>
@@ -380,7 +380,7 @@
             onclick={createSplit}
             disabled={loading || !description.trim() || !amount || participants.length === 0}
             size="lg"
-            class="w-full border-primary/50 bg-black font-mono tracking-wider uppercase shadow-lg shadow-primary/20 hover:border-primary hover:shadow-primary/40"
+            class="w-full border-primary/50 font-mono tracking-wider uppercase shadow-lg shadow-primary/20 hover:border-primary hover:shadow-primary/40"
           >
             {#if loading}
               &gt; Creating_Split...

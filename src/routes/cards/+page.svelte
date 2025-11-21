@@ -98,7 +98,7 @@
               {#each cards as card, i}
                 <button
                   onclick={() => (selectedCardIndex = i)}
-                  class="relative min-w-[280px] flex-shrink-0 overflow-hidden border transition-all {selectedCardIndex ===
+                  class="relative min-w-[280px] flex-shrink-0 overflow-hidden rounded-2xl border transition-all {selectedCardIndex ===
                   i
                     ? 'scale-90 border-primary shadow-lg shadow-primary/50'
                     : 'scale-80 border-primary/30 opacity-60'} {i === cards.length - 1
@@ -187,7 +187,7 @@
                         variant="outline"
                         onclick={() => handleSplit(tx.id)}
                         size="sm"
-                        class="gap-1 border-primary/50 font-mono text-xs uppercase hover:border-primary hover:shadow-primary/30"
+                        class="gap-1 border-primary/50 font-mono text-xs uppercase hover:border-primary hover:text-primary hover:shadow-primary/30"
                       >
                         Split
                         <ArrowRight class="h-3 w-3" />

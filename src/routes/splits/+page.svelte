@@ -44,7 +44,7 @@
 </script>
 
 <AuthGuard>
-  <div class="min-h-screen bg-black pb-24">
+  <div class="min-h-screen pb-24">
     <div class="p-6">
       <h1
         class="mb-6 border-b border-primary/20 pb-4 font-mono text-xl font-bold tracking-wider text-primary uppercase"
@@ -66,7 +66,7 @@
           <Button
             onclick={() => goto('/cards')}
             size="lg"
-            class="border-primary/50 bg-black font-mono uppercase hover:border-primary hover:shadow-primary/30"
+            class="border-primary/50 font-mono uppercase hover:border-primary hover:shadow-primary/30"
           >
             &gt; View_Transactions
           </Button>
