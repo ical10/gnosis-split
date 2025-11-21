@@ -15,8 +15,9 @@
     loadSplits();
   });
 
-  function loadSplits() {
-    splits = getSplits().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  async function loadSplits() {
+    const allSplits = await getSplits();
+    splits = allSplits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   function formatAmount(cents: number): string {

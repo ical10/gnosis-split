@@ -162,11 +162,9 @@
     loading = true;
 
     try {
-      const splitId = `split_${Date.now()}`;
       const totalCents = Math.round(amountNum * 100);
 
-      saveSplit({
-        id: splitId,
+      const newSplit = await saveSplit({
         description: description.trim(),
         totalAmount: totalCents,
         date,
@@ -177,7 +175,7 @@
       });
 
       toast.success('Split created successfully!');
-      goto(`/split/${splitId}`);
+      goto(`/split/${newSplit.id}`);
     } catch (error) {
       console.error('Failed to create split:', error);
       toast.error('Failed to create split');

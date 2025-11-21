@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import AuthGuard from '$lib/components/AuthGuard.svelte';
@@ -17,29 +17,49 @@
   import { Badge } from '$lib/components/ui/badge';
   import * as Avatar from '$lib/components/ui/avatar';
   import { toast } from 'svelte-sonner';
+  import { createSplitStore } from '$lib/supabase';
 
-  let split = $state<Split | null>(null);
   let paying = $state(false);
   let showQr = $state<string | null>(null);
+  let splitStore = $state<ReturnType<typeof createSplitStore> | null>(null);
+  const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE;
 
-  onMount(() => {
-    loadSplit();
-  });
+  let split = $derived(splitStore ? $splitStore : null);
 
-  function loadSplit() {
+  onMount(async () => {
     const id = $page.params.id;
     if (!id) {
       goto('/cards');
       return;
     }
 
-    const loaded = getSplit(id);
-    if (!loaded) {
-      goto('/splits');
-      return;
+    if (USE_SUPABASE === 'true') {
+      splitStore = createSplitStore(id);
+    } else {
+      const loaded = await getSplit(id);
+      if (!loaded) {
+        goto('/splits');
+        return;
+      }
+
+      splitStore = {
+        subscribe: (cb: (value: Split | null) => void) => {
+          cb(loaded);
+          return () => {};
+        },
+        refresh: async () => {},
+        unsubscribe: async () => {
+          return 'ok' as const;
+        }
+      };
     }
-    split = loaded;
-  }
+  });
+
+  onDestroy(() => {
+    if (splitStore?.unsubscribe) {
+      splitStore.unsubscribe();
+    }
+  });
 
   function formatAmount(cents: number): string {
     return `€${(cents / 100).toFixed(2)}`;
@@ -103,12 +123,15 @@
         value: amountInXDAI
       });
 
-      updateSplit(split.id, (s) => ({
+      await updateSplit(split.id, (s) => ({
         ...s,
         payments: [...s.payments, { address: myPart.address, txHash: hash }]
       }));
 
-      loadSplit();
+      if (USE_SUPABASE !== 'true') {
+        const loaded = await getSplit(split.id);
+        if (loaded) split = loaded;
+      }
       toast.success('Payment successful! 🎉', {
         description: 'Your payment has been recorded on-chain'
       });

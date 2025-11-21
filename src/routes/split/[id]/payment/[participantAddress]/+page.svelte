@@ -26,7 +26,7 @@
     loadPayment();
   });
 
-  function loadPayment() {
+  async function loadPayment() {
     const splitId = $page.params.id;
     const participantAddr = $page.params.participantAddress;
 
@@ -35,7 +35,7 @@
       return;
     }
 
-    const loaded = getSplit(splitId);
+    const loaded = await getSplit(splitId);
     if (!loaded) {
       goto('/splits');
       return;
