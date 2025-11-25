@@ -43,3 +43,16 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 10
+
+      - name: Post Netlify deploy comment
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployUrl = '${{ steps.netlify.outputs.deploy_url }}' || 'https://your-netlify-site.netlify.app';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Deployed on ${deployUrl}\nCommit: ${{ github.sha }}`
+            })
