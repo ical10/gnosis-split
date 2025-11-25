@@ -185,7 +185,7 @@
   }
 
   function formatAmount(cents: number): string {
-    return `€${(cents / 100).toFixed(2)}`;
+    return `$${(cents / 100).toFixed(2)}`;
   }
 </script>
 
@@ -241,7 +241,7 @@
 
           <div class="space-y-2">
             <Label for="amount" class="font-mono text-xs text-primary uppercase"
-              >Total Amount (€)</Label
+              >Total Amount ($)</Label
             >
             <Input
               id="amount"
