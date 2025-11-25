@@ -6,7 +6,7 @@
   import { getSplit, updateSplit } from '$lib/storage';
   import { address as walletAddress } from '$lib/stores/wallet';
   import type { Split, Participant } from '$lib/types';
-  import { CircleCheck, Clock, Copy, QrCode, Share2 } from 'lucide-svelte';
+  import { CircleCheck, Clock, Copy, ExternalLink, QrCode, Share2 } from 'lucide-svelte';
   import { generateQRCode } from '$lib/utils';
   import Spinner from '$lib/components/ui/spinner/spinner.svelte';
   import { getWalletClient } from '@wagmi/core';
@@ -18,10 +18,12 @@
   import * as Avatar from '$lib/components/ui/avatar';
   import { toast } from 'svelte-sonner';
   import { createSplitStore } from '$lib/supabase';
+  import { verifyAndMarkXDAIPaid } from '$lib/blockscoutVerifier';
 
   let paying = $state(false);
   let showQr = $state<string | null>(null);
   let splitStore = $state<ReturnType<typeof createSplitStore> | null>(null);
+  let pollInterval: ReturnType<typeof setInterval> | null = null;
   const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE;
 
   let split = $derived(splitStore ? $splitStore : null);
@@ -55,14 +57,54 @@
     }
   });
 
+  $effect(() => {
+    if (split) {
+      if (pollInterval) clearInterval(pollInterval);
+
+      const check = async () => {
+        if (!split) return;
+
+        const id = $page.params.id;
+        if (!id) {
+          goto('/cards');
+          return;
+        }
+
+        await verifyAndMarkXDAIPaid(id, split);
+
+        if (USE_SUPABASE !== 'true') {
+          const loaded = await getSplit(id);
+          if (loaded && splitStore) {
+            splitStore = {
+              subscribe: (cb: (value: Split | null) => void) => {
+                cb(loaded);
+                return () => {};
+              },
+              refresh: async () => {},
+              unsubscribe: async () => {
+                return 'ok' as const;
+              }
+            };
+          }
+        }
+      };
+
+      check();
+      pollInterval = setInterval(check, 20_000);
+    }
+  });
+
   onDestroy(() => {
     if (splitStore?.unsubscribe) {
       splitStore.unsubscribe();
     }
+    if (pollInterval) {
+      clearInterval(pollInterval);
+    }
   });
 
   function formatAmount(cents: number): string {
-    return `€${(cents / 100).toFixed(2)}`;
+    return `$${(cents / 100).toFixed(2)}`;
   }
 
   function formatDate(dateStr: string): string {
@@ -81,6 +123,19 @@
   function isParticipantPaid(participantAddress: string): boolean {
     if (!split) return false;
     return split.payments.some((p) => p.address.toLowerCase() === participantAddress.toLowerCase());
+  }
+
+  function getPaymentTxHash(participantAddress: string): string | undefined {
+    if (!split) return undefined;
+    const payment = split.payments.find(
+      (p) => p.address.toLowerCase() === participantAddress.toLowerCase()
+    );
+    return payment?.txHash;
+  }
+
+  function getBlockscoutTxUrl(txHash: string): string {
+    const explorerBase = import.meta.env.VITE_BLOCKSCOUT_EXPLORER;
+    return `${explorerBase}/tx/${txHash}`;
   }
 
   function getMyParticipant(): Participant | null {
@@ -248,10 +303,28 @@
                         {formatAmount(participant.amount)}
                       </div>
                       {#if isPaid}
-                        <Badge variant="default" class="gap-1 bg-primary/20 text-primary">
-                          <CircleCheck class="h-3 w-3" />
-                          Paid
-                        </Badge>
+                        {@const txHash = getPaymentTxHash(participant.address)}
+                        {#if txHash}
+                          <a
+                            href={getBlockscoutTxUrl(txHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Badge
+                              variant="default"
+                              class="gap-1 bg-primary/20 text-primary hover:bg-primary/30"
+                            >
+                              <CircleCheck class="h-3 w-3" />
+                              Paid
+                              <ExternalLink class="h-3 w-3" />
+                            </Badge>
+                          </a>
+                        {:else}
+                          <Badge variant="default" class="gap-1 bg-primary/20 text-primary">
+                            <CircleCheck class="h-3 w-3" />
+                            Paid
+                          </Badge>
+                        {/if}
                       {:else}
                         <Badge variant="secondary" class="gap-1 bg-yellow-500/20 text-yellow-500">
                           <Clock class="h-3 w-3" />
