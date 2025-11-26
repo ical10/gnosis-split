@@ -185,7 +185,18 @@
 
       if (USE_SUPABASE !== 'true') {
         const loaded = await getSplit(split.id);
-        if (loaded) split = loaded;
+        if (loaded && splitStore) {
+          splitStore = {
+            subscribe: (cb: (value: Split | null) => void) => {
+              cb(loaded);
+              return () => {};
+            },
+            refresh: async () => {},
+            unsubscribe: async () => {
+              return 'ok' as const;
+            }
+          };
+        }
       }
       toast.success('Payment successful! 🎉', {
         description: 'Your payment has been recorded on-chain'
