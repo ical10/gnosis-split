@@ -140,7 +140,7 @@ export async function updateSplitParticipants(splitId: string, participants: Par
   if (!USE_SUPABASE) {
     const splits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     const idx = splits.findIndex((s: Split) => s.id === splitId);
-    if (idx > 0) {
+    if (idx >= 0) {
       splits[idx].participants = participants;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
     }
