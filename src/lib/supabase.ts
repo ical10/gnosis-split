@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { writable } from 'svelte/store';
 import type { Split } from './types';
 import type { Database } from './supabase-types';
+import { unsubscribe } from 'diagnostics_channel';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -12,7 +13,7 @@ export const createSplitStore = (splitId: string) => {
   const { subscribe, set } = writable<Split | null>(null);
 
   if (import.meta.env.VITE_USE_SUPABASE !== 'true') {
-    return { subscribe, set, refresh: async () => { } };
+    return { subscribe, refresh: async () => { }, unsubscribe: () => { } };
   }
 
   const load = async () => {
