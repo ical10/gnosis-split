@@ -144,7 +144,8 @@
   }
 
   function getBlockscoutTxUrl(txHash: string): string {
-    const explorerBase = import.meta.env.VITE_BLOCKSCOUT_EXPLORER;
+    const explorerBase =
+      import.meta.env.VITE_BLOCKSCOUT_EXPLORER || 'https://gnosis-chiado.blockscout.com';
     return `${explorerBase}/tx/${txHash}`;
   }
 
