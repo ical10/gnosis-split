@@ -17,10 +17,11 @@ export async function getSplits(): Promise<Split[]> {
       return [];
     }
   } else {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('splits')
       .select('*')
       .order('created_at', { ascending: false });
+    if (error) throw new Error("Error when getting splits: ", error);
     if (!data) return [];
 
     return data.map((row) => ({
@@ -37,13 +38,20 @@ export async function getSplits(): Promise<Split[]> {
   }
 }
 
-export async function saveSplit(split: Omit<Split, 'id' | 'createdAt'>): Promise<Split> {
+export async function saveSplit(split: Omit<Split, 'id' | 'createdAt'>): Promise<Split | undefined> {
   if (!USE_SUPABASE) {
-    const splits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const newSplit = { ...split, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-    splits.push(newSplit);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
-    return newSplit;
+    if (!browser) return;
+
+    try {
+      const splits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const newSplit = { ...split, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+      splits.push(newSplit);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
+      return newSplit;
+    } catch (error) {
+      console.error("Failed to save split: ", error);
+      throw error;
+    }
   }
 
   const { data, error } = await supabase
@@ -164,13 +172,21 @@ export async function deleteSplit(id: string): Promise<void> {
 
 export async function updateSplitParticipants(splitId: string, participants: Participant[]) {
   if (!USE_SUPABASE) {
-    const splits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const idx = splits.findIndex((s: Split) => s.id === splitId);
-    if (idx >= 0) {
-      splits[idx].participants = participants;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
+
+    if (!browser) return;
+
+    try {
+      const splits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const idx = splits.findIndex((s: Split) => s.id === splitId);
+      if (idx >= 0) {
+        splits[idx].participants = participants;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(splits));
+      }
+      return;
+    } catch (error) {
+      console.error("Failed when updating split participants: ", error);
+      throw error;
     }
-    return;
   }
 
   const { error } = await supabase
