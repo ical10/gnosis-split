@@ -59,7 +59,10 @@
 
   $effect(() => {
     if (split) {
-      if (pollInterval) clearInterval(pollInterval);
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
 
       const check = async () => {
         if (!split) return;
@@ -91,6 +94,13 @@
 
       check();
       pollInterval = setInterval(check, 20_000);
+
+      return () => {
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
+      };
     }
   });
 
