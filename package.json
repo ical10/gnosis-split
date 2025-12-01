@@ -49,6 +49,7 @@
   "dependencies": {
     "@reown/appkit": "^1.8.14",
     "@reown/appkit-adapter-wagmi": "^1.8.14",
+    "@supabase/supabase-js": "^2.84.0",
     "@wagmi/core": "^2.22.1",
     "lucide-svelte": "^0.554.0",
     "qrcode": "^1.5.4",

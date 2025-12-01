@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "DRAFT"
+
+  path_filters:
+    # Node modules
+    - "!node_modules/**"
+
+    # Build outputs
+    - "!.output/**"
+    - "!.vercel/**"
+    - "!.netlify/**"
+    - "!.wrangler/**"
+    - "!.svelte-kit/**"
+    - "!build/**"
+
+    # OS files
+    - "!**/.DS_Store"
+    - "!**/Thumbs.db"
+
+    # Env files (except examples)
+    - "!.env"
+    - "!.env.*"
+
+    # Vite temp files
+    - "!vite.config.js.timestamp-*"
+    - "!vite.config.ts.timestamp-*"
+
+    # Supabase temp
+    - "!supabase/.temp/**"
+
+    # Lock files
+    - "!**/bun.lockb"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
+    - "!**/pnpm-lock.yaml"

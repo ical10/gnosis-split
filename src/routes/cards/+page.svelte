@@ -51,8 +51,8 @@
 
   function formatAmount(cents: string): string {
     const num = parseInt(cents);
-    const euros = Math.abs(num) / 100;
-    return `€${euros.toFixed(2)}`;
+    const dollars = Math.abs(num) / 100;
+    return `$${dollars.toFixed(2)}`;
   }
 
   function formatDate(dateStr: string): string {
