@@ -76,8 +76,34 @@ export async function saveSplit(split: Omit<Split, 'id' | 'createdAt'>): Promise
 }
 
 export async function getSplit(id: string): Promise<Split | undefined> {
-  const splits = await getSplits();
-  return splits.find((s) => s.id === id);
+  if (!USE_SUPABASE) {
+    const splits = await getSplits();
+    return splits.find((s) => s.id === id);
+  }
+
+  const { data, error } = await supabase
+    .from('splits')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error || !data) return undefined;
+
+  const { id: foundId, description, total_amount, date, payer_address, participants, payments, created_at, source_tx_id } = data;
+
+  const foundSplit = {
+    id: foundId,
+    description,
+    totalAmount: total_amount,
+    date,
+    payerAddress: payer_address,
+    participants: participants as unknown as Split['participants'],
+    payments: payments as unknown as Split['payments'],
+    createdAt: created_at as unknown as Split['createdAt'],
+    sourceTxId: source_tx_id || undefined,
+  }
+
+  return foundSplit;
 }
 
 export async function updateSplit(id: string, updater: (split: Split) => Split): Promise<void> {
