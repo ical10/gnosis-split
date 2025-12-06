@@ -25,3 +25,8 @@ export async function generateQRCode(text: string): Promise<string> {
     throw error;
   }
 }
+
+export function formatAmount(cents: number | string): string {
+  const num = typeof cents === 'string' ? parseInt(cents) : cents;
+  return `$${(Math.abs(num) / 100).toFixed(2)}`;
+}
