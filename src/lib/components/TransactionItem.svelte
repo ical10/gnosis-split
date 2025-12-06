@@ -8,6 +8,10 @@
 
   let { tx }: { tx: Transaction } = $props();
 
+  function handleSplit() {
+    goto(`/split/new?txId=${tx.id}`);
+  }
+
   function formatAmount(cents: string): string {
     const num = parseInt(cents);
     return `$${(Math.abs(num) / 100).toFixed(2)}`;
@@ -18,10 +22,6 @@
       day: 'numeric',
       month: 'short'
     }).format(new Date(dateStr));
-  }
-
-  function handleSplit(txId: string) {
-    goto(`/split/new?txId=${txId}`);
   }
 </script>
 
@@ -60,7 +60,7 @@
         </div>
         <Button
           variant="outline"
-          onclick={() => handleSplit(tx.id)}
+          onclick={handleSplit}
           size="sm"
           class="gap-1 border-primary/50 font-mono text-xs uppercase hover:border-primary hover:text-primary hover:shadow-primary/30"
         >

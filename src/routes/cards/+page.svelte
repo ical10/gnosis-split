@@ -86,7 +86,7 @@
             <div class="font-mono text-xs text-muted-foreground">{transactions.length} total</div>
           </div>
 
-          <div class="scrollbar-hide space-y-3 overflow-y-auto">
+          <div class="scrollbar-hide flex flex-col gap-4 overflow-y-auto px-3 pt-3">
             {#each transactions as tx}
               <TransactionItem {tx} />
             {/each}
