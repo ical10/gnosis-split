@@ -19,9 +19,9 @@
 <div class="flex min-h-[80vh] flex-col items-center justify-center p-6">
   <div class="max-w-md text-center">
     <div class="mb-8 flex items-center justify-center gap-2">
-      <div class="h-px w-12 bg-gradient-to-r from-transparent to-primary"></div>
+      <div class="h-px w-12 bg-linear-to-r from-transparent to-primary"></div>
       <div class="text-xs tracking-widest text-primary uppercase">BUILD ON PUBLIC</div>
-      <div class="h-px w-12 bg-gradient-to-l from-transparent to-primary"></div>
+      <div class="h-px w-12 bg-linear-to-l from-transparent to-primary"></div>
     </div>
 
     <h1 class="mb-4 text-4xl font-bold tracking-tight text-primary">
@@ -41,7 +41,7 @@
 
     <div class="mt-12 space-y-3 font-mono text-xs text-muted-foreground">
       <p class="flex items-center justify-center gap-2">
-        <span class="text-primary">[01]</span> Link_Gnosis_Pay_Card
+        <span class="text-primary">[01]</span> Link_Safe_Account
       </p>
       <p class="flex items-center justify-center gap-2">
         <span class="text-primary">[02]</span> Split_Bills_P2P
