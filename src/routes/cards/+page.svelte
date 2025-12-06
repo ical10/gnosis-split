@@ -1,16 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
   import AuthGuard from '$lib/components/AuthGuard.svelte';
   import { getCards, getTransactions } from '$lib/gnosisPay';
   import type { Card, Transaction } from '$lib/types';
-  import { ExternalLink, ArrowRight } from 'lucide-svelte';
+  import { ExternalLink } from 'lucide-svelte';
   import { hideAppkitButton } from '$lib/stores/ui';
   import { Button } from '$lib/components/ui/button';
   import * as CardUI from '$lib/components/ui/card';
-  import { Badge } from '$lib/components/ui/badge';
   import { Skeleton } from '$lib/components/ui/skeleton';
   import CardCarousel from '$lib/components/CardCarousel.svelte';
+  import TransactionItem from '$lib/components/TransactionItem.svelte';
 
   let cards: Card[] = $state([]);
   let transactions: Transaction[] = $state([]);
@@ -48,24 +47,6 @@
       hideAppkitButton.set(false);
     };
   });
-
-  function formatAmount(cents: string): string {
-    const num = parseInt(cents);
-    const dollars = Math.abs(num) / 100;
-    return `$${dollars.toFixed(2)}`;
-  }
-
-  function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat('en-GB', {
-      day: 'numeric',
-      month: 'short'
-    }).format(date);
-  }
-
-  function handleSplit(txId: string) {
-    goto(`/split/new?txId=${txId}`);
-  }
 </script>
 
 <AuthGuard>
@@ -107,52 +88,7 @@
 
           <div class="scrollbar-hide space-y-3 overflow-y-auto">
             {#each transactions as tx}
-              <CardUI.Root
-                class="border-primary/20 bg-card/50 transition-all hover:border-primary/40 hover:shadow-sm hover:shadow-primary/20"
-              >
-                <CardUI.Content class="p-4">
-                  <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                      <div class="mb-1 flex items-center gap-2">
-                        <div class="font-mono text-sm font-semibold">{tx.merchant.name}</div>
-                        {#if tx.status === 'PENDING'}
-                          <Badge
-                            variant="secondary"
-                            class="border-yellow-500/30 bg-yellow-500/10 font-mono text-[10px] text-yellow-500 uppercase"
-                          >
-                            Pending
-                          </Badge>
-                        {/if}
-                      </div>
-                      <div class="mb-2 font-mono text-xs text-muted-foreground">
-                        {#if tx.merchant.city}{tx.merchant.city},
-                        {/if}{tx.merchant.country}
-                        <span class="text-primary/50">•</span>
-                        {formatDate(tx.transactionDate)}
-                      </div>
-                      {#if parseInt(tx.cashbackAmount.value) > 0}
-                        <div class="font-mono text-xs text-primary">
-                          +{formatAmount(tx.cashbackAmount.value)} cashback
-                        </div>
-                      {/if}
-                    </div>
-                    <div class="flex flex-col items-end gap-2">
-                      <div class="font-mono text-lg font-bold text-destructive">
-                        {formatAmount(tx.amount.value)}
-                      </div>
-                      <Button
-                        variant="outline"
-                        onclick={() => handleSplit(tx.id)}
-                        size="sm"
-                        class="gap-1 border-primary/50 font-mono text-xs uppercase hover:border-primary hover:text-primary hover:shadow-primary/30"
-                      >
-                        Split
-                        <ArrowRight class="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardUI.Content>
-              </CardUI.Root>
+              <TransactionItem {tx} />
             {/each}
           </div>
 
