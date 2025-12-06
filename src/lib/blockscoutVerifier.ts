@@ -44,8 +44,6 @@ export async function verifyAndMarkXDAIPaid(splitId: string, split: Split) {
 
       const json: BlockscoutResponse = await resp.json();
 
-      console.log({ json })
-
       for (const tx of json.items) {
         if (seenTxHashes.has(tx.hash)) continue;
 

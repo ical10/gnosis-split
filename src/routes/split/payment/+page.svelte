@@ -7,6 +7,7 @@
   import { address as walletAddress } from '$lib/stores/wallet';
   import type { Split, Participant } from '$lib/types';
   import { CircleCheck, ArrowLeft } from 'lucide-svelte';
+  import { formatAmount, getAvatarUrl } from '$lib/utils';
   import { getWalletClient } from '@wagmi/core';
   import { parseEther, type Address } from 'viem';
   import { config } from '$lib/appkit';
@@ -22,13 +23,9 @@
   let isPaid = $state(false);
   let isConnectedParticipant = $state(false);
 
-  onMount(() => {
-    loadPayment();
-  });
-
-  async function loadPayment() {
-    const splitId = $page.params.id;
-    const participantAddr = $page.params.participantAddress;
+  onMount(async () => {
+    const splitId = $page.url.searchParams.get('splitId');
+    const participantAddr = $page.url.searchParams.get('payer');
 
     if (!splitId || !participantAddr) {
       goto('/splits');
@@ -42,24 +39,18 @@
     }
 
     split = loaded;
+    participant =
+      loaded.participants.find((p) => p.address.toLowerCase() === participantAddr.toLowerCase()) ||
+      null;
 
-    const foundParticipant = split.participants.find(
-      (p) => p.address.toLowerCase() === participantAddr.toLowerCase()
-    );
-
-    if (!foundParticipant) {
+    if (!participant) {
       goto(`/split/${splitId}`);
       return;
     }
 
-    participant = foundParticipant;
-    isPaid = split.payments.some((p) => p.address.toLowerCase() === participantAddr.toLowerCase());
+    isPaid = loaded.payments.some((p) => p.address.toLowerCase() === participantAddr.toLowerCase());
     isConnectedParticipant = $walletAddress?.toLowerCase() === participantAddr.toLowerCase();
-  }
-
-  function formatAmount(cents: number): string {
-    return `$${(cents / 100).toFixed(2)}`;
-  }
+  });
 
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
@@ -70,16 +61,12 @@
     }).format(date);
   }
 
-  function getAvatarUrl(addr: string): string {
-    return `https://api.dicebear.com/7.x/identicon/svg?seed=${addr}`;
-  }
-
   function shortenAddress(addr: string): string {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   }
 
-  async function payMyShare() {
-    if (!split || !participant || !$walletAddress || !config) return;
+  async function payShare() {
+    if (!split || !participant || !config) return;
 
     paying = true;
 
@@ -98,12 +85,17 @@
         value: amountInXDAI
       });
 
-      updateSplit(split.id, (s) => ({
+      await updateSplit(split.id, (s) => ({
         ...s,
         payments: [...s.payments, { address: participant!.address, txHash: hash }]
       }));
 
-      isPaid = true;
+      const updated = await getSplit(split.id);
+      if (updated) {
+        split = updated;
+        isPaid = true;
+      }
+
       toast.success('Payment successful! 🎉', {
         description: 'Your payment has been recorded on-chain'
       });
@@ -124,33 +116,33 @@
 
 <AuthGuard>
   {#if split && participant}
-    <div class="min-h-screen pb-24">
+    <div class="min-h-screen bg-zinc-950 pb-24">
       <div class="p-6">
         <Button
-          onclick={() => split && goto(`/split/${split.id}`)}
+          onclick={() => goto(`/split/${split?.id}`)}
           variant="ghost"
           size="sm"
-          class="mb-6 -ml-3 gap-2"
+          class="mb-6 -ml-3"
         >
-          <ArrowLeft class="h-4 w-4" />
+          <ArrowLeft class="mr-2 h-4 w-4" />
           Back to Split
         </Button>
 
         <div class="mb-6">
-          <h1 class="mb-2 text-2xl font-bold">Payment Details</h1>
-          <p class="text-muted-foreground">{split.description}</p>
+          <h1 class="mb-2 text-2xl font-bold">Payment for {split.description}</h1>
+          <p class="text-muted-foreground">{formatDate(split.date)}</p>
         </div>
 
         <Card.Root class="mb-6">
           <Card.Content class="p-6">
-            <div class="mb-4 flex items-center gap-3">
+            <div class="mb-6 flex items-center gap-4">
               <Avatar.Root class="h-16 w-16">
                 <Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
                 <Avatar.Fallback>{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback>
               </Avatar.Root>
               <div class="flex-1">
                 {#if participant.name}
-                  <div class="mb-1 text-lg font-medium">{participant.name}</div>
+                  <div class="mb-1 text-lg font-semibold">{participant.name}</div>
                 {/if}
                 <div class="text-sm text-muted-foreground">
                   {shortenAddress(participant.address)}
@@ -158,77 +150,51 @@
               </div>
             </div>
 
-            <div class="mb-4 border-t pt-4">
-              <div class="mb-2 text-sm text-muted-foreground">Amount to Pay</div>
-              <div class="text-4xl font-bold text-primary">
+            <div class="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <div class="mb-1 text-sm text-muted-foreground">Amount Due</div>
+              <div class="text-3xl font-bold text-primary">
                 {formatAmount(participant.amount)}
               </div>
             </div>
 
-            <div class="border-t pt-4">
-              <div class="mb-2 text-sm text-muted-foreground">Pay to</div>
-              <div class="text-sm">{shortenAddress(split.payerAddress)}</div>
+            <div class="text-sm text-muted-foreground">
+              <p class="mb-2">
+                <strong>Pay to:</strong>
+                {shortenAddress(split.payerAddress)}
+              </p>
+              <p>Payment will be sent in xDAI on Gnosis Chiado (testnet)</p>
             </div>
           </Card.Content>
         </Card.Root>
 
         {#if isPaid}
-          <Card.Root class="mb-6 border-primary/50 bg-primary/10">
-            <Card.Content class="flex items-center justify-center gap-3 p-6 text-primary">
-              <CircleCheck class="h-6 w-6" />
-              <span class="text-lg font-semibold">Payment Completed</span>
+          <Card.Root class="border-primary/50 bg-primary/10">
+            <Card.Content class="p-6 text-center">
+              <CircleCheck class="mx-auto mb-3 h-12 w-12 text-primary" />
+              <h2 class="mb-2 text-xl font-bold text-primary">Payment Complete</h2>
+              <p class="text-sm text-muted-foreground">
+                This share has already been paid. Thank you!
+              </p>
             </Card.Content>
           </Card.Root>
         {:else if isConnectedParticipant}
-          <Button onclick={payMyShare} disabled={paying} size="lg" class="w-full">
+          <Button onclick={payShare} disabled={paying} size="lg" class="w-full">
             {#if paying}
               Processing Payment...
             {:else}
-              Pay My Share ({formatAmount(participant.amount)})
+              Pay {formatAmount(participant.amount)}
             {/if}
           </Button>
-
-          <p class="mt-3 text-center text-sm text-muted-foreground">
-            Payment will be sent in xDAI on Gnosis Chiado (testnet)
-          </p>
         {:else}
-          <Card.Root class="border-yellow-500/20 bg-yellow-500/10">
+          <Card.Root class="border-yellow-500/50 bg-yellow-500/10">
             <Card.Content class="p-6 text-center">
-              <p class="mb-3 text-yellow-400">
-                Connect with the participant's wallet to make payment
-              </p>
+              <h2 class="mb-2 text-lg font-semibold text-yellow-500">Connect Your Wallet</h2>
               <p class="text-sm text-muted-foreground">
-                Wallet address: {shortenAddress(participant.address)}
+                Connect wallet with address {shortenAddress(participant.address)} to pay this share
               </p>
             </Card.Content>
           </Card.Root>
         {/if}
-
-        <Card.Root class="mt-6">
-          <Card.Header>
-            <Card.Title class="text-sm">Split Information</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Date</span>
-                <span>{formatDate(split.date)}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Total Amount</span>
-                <span>{formatAmount(split.totalAmount)}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Participants</span>
-                <span>{split.participants.length}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Paid</span>
-                <span>{split.payments.length}/{split.participants.length}</span>
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
       </div>
     </div>
   {/if}

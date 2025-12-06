@@ -7,6 +7,7 @@
   import { saveSplit } from '$lib/storage';
   import { address } from '$lib/stores/wallet';
   import type { Participant } from '$lib/types';
+  import { formatAmount, getAvatarUrl } from '$lib/utils';
   import { Plus, X, ArrowLeft } from 'lucide-svelte';
   import { isAddress, getAddress } from 'viem';
   import { mainnet } from 'viem/chains';
@@ -55,10 +56,6 @@
         });
     }
   });
-
-  function getAvatarUrl(addr: string): string {
-    return `https://api.dicebear.com/7.x/identicon/svg?seed=${addr}`;
-  }
 
   async function addParticipant() {
     if (!newParticipantAddress.trim()) return;
@@ -175,6 +172,11 @@
       });
 
       toast.success('Split created successfully!');
+
+      if (!newSplit) {
+        throw new Error('Error when creating a new split');
+      }
+
       goto(`/split/${newSplit.id}`);
     } catch (error) {
       console.error('Failed to create split:', error);
@@ -182,10 +184,6 @@
     } finally {
       loading = false;
     }
-  }
-
-  function formatAmount(cents: number): string {
-    return `$${(cents / 100).toFixed(2)}`;
   }
 </script>
 

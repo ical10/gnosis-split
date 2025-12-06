@@ -25,3 +25,30 @@ export async function generateQRCode(text: string): Promise<string> {
     throw error;
   }
 }
+
+export function formatAmount(cents: number | string): string {
+  const num = typeof cents === 'string' ? parseInt(cents) : cents;
+  return `$${(Math.abs(num) / 100).toFixed(2)}`;
+}
+
+export function formatDate(dateStr: string, format: 'short' | 'long' = 'short'): string {
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: format === 'short' ? 'short' : 'long',
+    year: 'numeric'
+  }).format(date);
+}
+
+export function getAvatarUrl(addr: string): string {
+  return `https://api.dicebear.com/7.x/identicon/svg?seed=${addr}`;
+}
+
+export function getPaymentStatus(split: { participants: any[]; payments: any[] }): {
+  paid: number;
+  total: number;
+} {
+  const total = split.participants.length;
+  const paid = split.payments.length;
+  return { paid, total };
+}
