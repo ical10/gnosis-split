@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Transaction } from '$lib/types';
+  import { formatAmount } from '$lib/utils';
   import { ArrowRight } from 'lucide-svelte';
   import * as CardUI from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
@@ -10,11 +11,6 @@
 
   function handleSplit() {
     goto(`/split/new?txId=${tx.id}`);
-  }
-
-  function formatAmount(cents: string): string {
-    const num = parseInt(cents);
-    return `$${(Math.abs(num) / 100).toFixed(2)}`;
   }
 
   function formatDate(dateStr: string): string {

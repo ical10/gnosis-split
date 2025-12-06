@@ -7,7 +7,7 @@
   import { address as walletAddress } from '$lib/stores/wallet';
   import type { Split, Participant } from '$lib/types';
   import { CircleCheck, Clock, Copy, ExternalLink, QrCode, Share2 } from 'lucide-svelte';
-  import { generateQRCode } from '$lib/utils';
+  import { generateQRCode, formatAmount } from '$lib/utils';
   import Spinner from '$lib/components/ui/spinner/spinner.svelte';
   import { getWalletClient } from '@wagmi/core';
   import { parseEther, type Address } from 'viem';
@@ -112,10 +112,6 @@
       clearInterval(pollInterval);
     }
   });
-
-  function formatAmount(cents: number): string {
-    return `$${(cents / 100).toFixed(2)}`;
-  }
 
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
