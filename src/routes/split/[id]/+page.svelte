@@ -6,22 +6,19 @@
   import { getSplit, updateSplit } from '$lib/storage';
   import { address as walletAddress } from '$lib/stores/wallet';
   import type { Split, Participant } from '$lib/types';
-  import { CircleCheck, Clock, Copy, ExternalLink, QrCode, Share2 } from 'lucide-svelte';
-  import { generateQRCode, formatAmount, formatDate, getAvatarUrl } from '$lib/utils';
-  import Spinner from '$lib/components/ui/spinner/spinner.svelte';
+  import { Share2 } from 'lucide-svelte';
+  import { formatAmount, formatDate } from '$lib/utils';
   import { getWalletClient } from '@wagmi/core';
   import { parseEther, type Address } from 'viem';
   import { config } from '$lib/appkit';
   import { Button } from '$lib/components/ui/button';
-  import * as Card from '$lib/components/ui/card';
-  import { Badge } from '$lib/components/ui/badge';
-  import * as Avatar from '$lib/components/ui/avatar';
   import { toast } from 'svelte-sonner';
   import { createSplitStore } from '$lib/supabase';
   import { verifyAndMarkXDAIPaid } from '$lib/blockscoutVerifier';
+  import SplitParticipantCard from '$lib/components/SplitParticipantCard.svelte';
+  import TransactionDetailCard from '$lib/components/TransactionDetailCard.svelte';
 
   let paying = $state(false);
-  let showQr = $state<string | null>(null);
   let splitStore = $state<ReturnType<typeof createSplitStore> | null>(null);
   let pollInterval: ReturnType<typeof setInterval> | null = null;
   const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE;
@@ -126,12 +123,6 @@
     return payment?.txHash;
   }
 
-  function getBlockscoutTxUrl(txHash: string): string {
-    const explorerBase =
-      import.meta.env.VITE_BLOCKSCOUT_EXPLORER || 'https://gnosis-chiado.blockscout.com';
-    return `${explorerBase}/tx/${txHash}`;
-  }
-
   function getMyParticipant(): Participant | null {
     if (!split || !$walletAddress) return null;
     return (
@@ -217,20 +208,6 @@
       description: 'Share it with participants'
     });
   }
-
-  function copyAddress(addr: string) {
-    navigator.clipboard.writeText(addr);
-    toast.success('Address copied!');
-  }
-
-  function getPaymentUrl(participantAddress: string): string {
-    if (!split) return '';
-    return `/split/${split.id}/payment/${participantAddress}`;
-  }
-
-  function shortenAddress(addr: string): string {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  }
 </script>
 
 <AuthGuard>
@@ -252,25 +229,7 @@
           </div>
         </div>
 
-        <Card.Root class="mb-6 border-primary bg-gradient-to-br from-primary to-primary/80">
-          <Card.Content class="p-6">
-            <div class="mb-2 text-sm text-primary-foreground/80">Total Amount</div>
-            <div class="text-4xl font-bold text-primary-foreground">
-              {formatAmount(split.totalAmount)}
-            </div>
-            <div class="mt-4 text-sm text-primary-foreground/80">
-              Paid by: {shortenAddress(split.payerAddress)}
-              <Button
-                onclick={() => split && copyAddress(split.payerAddress)}
-                variant="ghost"
-                size="sm"
-                class="ml-2 h-auto gap-1 bg-primary-foreground/20 px-2 py-1 hover:bg-primary-foreground/30"
-              >
-                <Copy class="h-3 w-3" />
-              </Button>
-            </div>
-          </Card.Content>
-        </Card.Root>
+        <TransactionDetailCard {split} />
 
         <div class="mb-6">
           <h2 class="mb-4 text-lg font-semibold">
@@ -281,127 +240,8 @@
             {#each split.participants as participant}
               {@const isPaid = isParticipantPaid(participant.address)}
               {@const isMe = $walletAddress?.toLowerCase() === participant.address.toLowerCase()}
-              <Card.Root>
-                <Card.Content class="p-4">
-                  <div class="flex items-center gap-3">
-                    <Avatar.Root class="h-12 w-12">
-                      <Avatar.Image src={getAvatarUrl(participant.address)} alt="Avatar" />
-                      <Avatar.Fallback
-                        >{participant.address.slice(2, 4).toUpperCase()}</Avatar.Fallback
-                      >
-                    </Avatar.Root>
-                    <div class="flex-1 overflow-hidden">
-                      <div class="flex items-center gap-2">
-                        {#if participant.name}
-                          <div class="font-medium">{participant.name}</div>
-                        {/if}
-                        {#if isMe}
-                          <Badge variant="secondary" class="bg-primary/20 text-primary">You</Badge>
-                        {/if}
-                      </div>
-                      <div class="truncate text-sm text-muted-foreground">
-                        {shortenAddress(participant.address)}
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <div class="mb-1 text-lg font-bold text-primary">
-                        {formatAmount(participant.amount)}
-                      </div>
-                      {#if isPaid}
-                        {@const txHash = getPaymentTxHash(participant.address)}
-                        {#if txHash}
-                          <a
-                            href={getBlockscoutTxUrl(txHash)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Badge
-                              variant="default"
-                              class="gap-1 bg-primary/20 text-primary hover:bg-primary/30"
-                            >
-                              <CircleCheck class="h-3 w-3" />
-                              Paid
-                              <ExternalLink class="h-3 w-3" />
-                            </Badge>
-                          </a>
-                        {:else}
-                          <Badge variant="default" class="gap-1 bg-primary/20 text-primary">
-                            <CircleCheck class="h-3 w-3" />
-                            Paid
-                          </Badge>
-                        {/if}
-                      {:else}
-                        <Badge variant="secondary" class="gap-1 bg-yellow-500/20 text-yellow-500">
-                          <Clock class="h-3 w-3" />
-                          Unpaid
-                        </Badge>
-                      {/if}
-                    </div>
-                  </div>
-
-                  {#if !isPaid && !isMe}
-                    <div class="mt-3 flex gap-2">
-                      <Button
-                        onclick={() =>
-                          (showQr = showQr === participant.address ? null : participant.address)}
-                        variant="outline"
-                        size="sm"
-                        class="flex-1 gap-1"
-                      >
-                        <QrCode class="h-4 w-4" />
-                        QR Code
-                      </Button>
-                      <Button href={getPaymentUrl(participant.address)} variant="outline" size="sm">
-                        View Payment
-                      </Button>
-                    </div>
-
-                    {#if showQr === participant.address}
-                      {#await generateQRCode(`${window.location.origin}${getPaymentUrl(participant.address)}`)}
-                        <Card.Root class="mt-3 bg-background">
-                          <Card.Content class="p-4 text-center">
-                            <Spinner class="mx-auto h-8 w-8" />
-                          </Card.Content>
-                        </Card.Root>
-                      {:then qrDataUrl}
-                        <Card.Root class="mt-3 bg-white">
-                          <Card.Content class="p-4">
-                            <h2 class="mb-3 text-center font-bold text-zinc-900">
-                              Scan to pay {formatAmount(participant.amount)}
-                            </h2>
-                            <img src={qrDataUrl} alt="Payment QR Code" class="mx-auto h-48 w-48" />
-                            <div class="mt-3 text-center">
-                              <div class="mb-2 text-xs break-all text-zinc-600">
-                                {window.location.origin}{getPaymentUrl(participant.address)}
-                              </div>
-                              <Button
-                                onclick={() => {
-                                  navigator.clipboard.writeText(
-                                    `${window.location.origin}${getPaymentUrl(participant.address)}`
-                                  );
-                                  toast.success('Payment link copied!');
-                                }}
-                                variant="secondary"
-                                size="sm"
-                                class="gap-1"
-                              >
-                                <Copy class="h-3 w-3" />
-                                Copy Link
-                              </Button>
-                            </div>
-                          </Card.Content>
-                        </Card.Root>
-                      {:catch error}
-                        <Card.Root class="mt-3 bg-destructive/10">
-                          <Card.Content class="p-4 text-center text-sm text-destructive">
-                            Failed to generate QR code
-                          </Card.Content>
-                        </Card.Root>
-                      {/await}
-                    {/if}
-                  {/if}
-                </Card.Content>
-              </Card.Root>
+              {@const txHash = getPaymentTxHash(participant.address)}
+              <SplitParticipantCard {participant} {isPaid} {isMe} {txHash} splitId={split.id} />
             {/each}
           </div>
         </div>
