@@ -7,7 +7,7 @@
   import { saveSplit } from '$lib/storage';
   import { address } from '$lib/stores/wallet';
   import type { Participant } from '$lib/types';
-  import { formatAmount } from '$lib/utils';
+  import { formatAmount, getAvatarUrl } from '$lib/utils';
   import { Plus, X, ArrowLeft } from 'lucide-svelte';
   import { isAddress, getAddress } from 'viem';
   import { mainnet } from 'viem/chains';
@@ -56,10 +56,6 @@
         });
     }
   });
-
-  function getAvatarUrl(addr: string): string {
-    return `https://api.dicebear.com/7.x/identicon/svg?seed=${addr}`;
-  }
 
   async function addParticipant() {
     if (!newParticipantAddress.trim()) return;

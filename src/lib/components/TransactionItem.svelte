@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Transaction } from '$lib/types';
-  import { formatAmount } from '$lib/utils';
+  import { formatAmount, formatDate } from '$lib/utils';
   import { ArrowRight } from 'lucide-svelte';
   import * as CardUI from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
@@ -11,13 +11,6 @@
 
   function handleSplit() {
     goto(`/split/new?txId=${tx.id}`);
-  }
-
-  function formatDate(dateStr: string): string {
-    return new Intl.DateTimeFormat('en-GB', {
-      day: 'numeric',
-      month: 'short'
-    }).format(new Date(dateStr));
   }
 </script>
 

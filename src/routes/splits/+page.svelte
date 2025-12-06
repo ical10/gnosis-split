@@ -4,6 +4,7 @@
   import AuthGuard from '$lib/components/AuthGuard.svelte';
   import { getSplits } from '$lib/storage';
   import type { Split } from '$lib/types';
+  import { getPaymentStatus } from '$lib/utils';
   import { Button } from '$lib/components/ui/button';
   import { Receipt } from 'lucide-svelte';
   import { Skeleton } from '$lib/components/ui/skeleton';
@@ -26,12 +27,6 @@
     } finally {
       loading = false;
     }
-  }
-
-  function getPaymentStatus(split: Split): { paid: number; total: number } {
-    const total = split.participants.length;
-    const paid = split.payments.length;
-    return { paid, total };
   }
 </script>
 

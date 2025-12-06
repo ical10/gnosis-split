@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Split } from '$lib/types';
-  import { formatAmount } from '$lib/utils';
+  import { formatAmount, formatDate } from '$lib/utils';
   import { CircleCheck, Clock } from 'lucide-svelte';
   import * as Card from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
@@ -10,15 +10,6 @@
 
   function handleSplitClick(splitId: string) {
     goto(`/split/${splitId}`);
-  }
-
-  function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    }).format(date);
   }
 </script>
 

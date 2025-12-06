@@ -7,7 +7,7 @@
   import { address as walletAddress } from '$lib/stores/wallet';
   import type { Split, Participant } from '$lib/types';
   import { CircleCheck, Clock, Copy, ExternalLink, QrCode, Share2 } from 'lucide-svelte';
-  import { generateQRCode, formatAmount } from '$lib/utils';
+  import { generateQRCode, formatAmount, formatDate, getAvatarUrl } from '$lib/utils';
   import Spinner from '$lib/components/ui/spinner/spinner.svelte';
   import { getWalletClient } from '@wagmi/core';
   import { parseEther, type Address } from 'viem';
@@ -112,19 +112,6 @@
       clearInterval(pollInterval);
     }
   });
-
-  function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(date);
-  }
-
-  function getAvatarUrl(addr: string): string {
-    return `https://api.dicebear.com/7.x/identicon/svg?seed=${addr}`;
-  }
 
   function isParticipantPaid(participantAddress: string): boolean {
     if (!split) return false;
@@ -257,7 +244,7 @@
           <div class="mb-2 flex items-start justify-between gap-3">
             <div class="flex-1">
               <h1 class="mb-2 text-2xl font-bold">{split.description}</h1>
-              <p class="text-muted-foreground">{formatDate(split.date)}</p>
+              <p class="text-muted-foreground">{formatDate(split.date, 'long')}</p>
             </div>
             <Button onclick={copyLink} variant="outline" size="icon" title="Share split link">
               <Share2 class="h-5 w-5" />
