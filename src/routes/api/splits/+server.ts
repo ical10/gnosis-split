@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { Split } from '$lib/types';
+import { SplitCreateSchema } from '$lib/validation';
 
 export const GET: RequestHandler = async () => {
   try {
@@ -35,7 +36,17 @@ export const GET: RequestHandler = async () => {
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const split = await request.json();
+    const body = await request.json();
+    const validationResult = SplitCreateSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return json(
+        { error: 'Validation failed', details: validationResult.error.flatten },
+        { status: 400 }
+      );
+    }
+
+    const split = validationResult.data;
 
     const { data, error } = await supabase
       .from('splits')
@@ -44,8 +55,8 @@ export const POST: RequestHandler = async ({ request }) => {
         total_amount: split.totalAmount,
         date: split.date,
         payer_address: split.payerAddress,
-        participants: split.participants,
-        payments: split.payments,
+        participants: split.participants as any,
+        payments: split.payments as any,
         source_tx_id: split.sourceTxId
       })
       .select()

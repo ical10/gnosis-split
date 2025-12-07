@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
-import type { Split, Participant } from '$lib/types';
+import type { Split } from '$lib/types';
+import { SplitUpdateSchema, ParticipantsUpdateSchema } from '$lib/validation';
 
 export const GET: RequestHandler = async ({ params }) => {
   if (!params.id) throw Error('Error when getting split');
@@ -40,7 +41,17 @@ export const PUT: RequestHandler = async ({ params, request }) => {
   if (!params.id) throw Error("Error when updating split");
 
   try {
-    const updatedSplit = await request.json();
+    const body = await request.json();
+    const validationResult = SplitUpdateSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return json(
+        { error: 'Validation failed', details: validationResult.error.flatten },
+        { status: 400 }
+      );
+    }
+
+    const updatedSplit = validationResult.data;
 
     const { data, error } = await supabase
       .from('splits')
@@ -49,8 +60,8 @@ export const PUT: RequestHandler = async ({ params, request }) => {
         total_amount: updatedSplit.totalAmount,
         date: updatedSplit.date,
         payer_address: updatedSplit.payerAddress,
-        participants: updatedSplit.participants,
-        payments: updatedSplit.payments,
+        participants: updatedSplit.participants as any,
+        payments: updatedSplit.payments as any,
         source_tx_id: updatedSplit.sourceTxId
       })
       .eq('id', params.id)
@@ -104,7 +115,17 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
   if (!params.id) throw Error('Error when updating participants');
 
   try {
-    const { participants } = await request.json() as { participants: Participant[] };
+    const body = await request.json();
+    const validationResult = ParticipantsUpdateSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return json(
+        { error: 'Validation failed', details: validationResult.error.flatten },
+        { status: 400 }
+      );
+    }
+
+    const { participants } = validationResult.data;
 
     const { error } = await supabase
       .from('splits')
