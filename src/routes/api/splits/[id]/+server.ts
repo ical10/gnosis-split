@@ -70,7 +70,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
     if (error) {
       console.error('Database error updating split:', error);
-      return json({ error: 'Failed to update split', details: error.message }, { status: 500 });
+      return json({ error: 'Failed to update split' }, { status: 500 });
     }
 
     if (!data) {
@@ -149,7 +149,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 
     if (error) {
       console.error('Database error updating participants:', error);
-      return json({ error: 'Failed to update participants', details: error.message }, { status: 500 });
+      return json({ error: 'Failed to update participants' }, { status: 500 });
     }
 
     return json({ success: true }, { status: 200 });
