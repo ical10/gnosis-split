@@ -1,25 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
+import { PRIVATE_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import type { Database } from '$lib/supabase-types';
-import { env } from '$env/dynamic/private';
 
 let _supabase: ReturnType<typeof createClient<Database>> | null = null;
 
 export function getSupabase() {
   if (!_supabase) {
-    const url = env.SUPABASE_URL || process.env.SUPABASE_URL;
-    const key = env.SUPABASE_SECRET_API_KEY || process.env.SUPABASE_SECRET_API_KEY;
+    const supabaseUrl = PRIVATE_SUPABASE_URL;
+    const supabaseKey = PRIVATE_SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!url || !key) {
-      console.error('Missing Supabase credentials', {
-        urlFromEnv: !!env.SUPABASE_URL,
-        urlFromProcess: !!process.env.SUPABASE_URL,
-        keyFromEnv: !!env.SUPABASE_SECRET_API_KEY,
-        keyFromProcess: !!process.env.SUPABASE_SECRET_API_KEY
-      });
-      throw new Error(`Missing Supabase environment variables. URL: ${!!url}, KEY: ${!!key}`);
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error(
+        `Missing Supabase env vars. URL: ${!!supabaseUrl}, KEY: ${!!supabaseKey}. ` +
+        `Make sure PRIVATE_SUPABASE_URL and PRIVATE_SUPABASE_SERVICE_ROLE_KEY are set in Netlify.`
+      );
     }
 
-    _supabase = createClient<Database>(url, key);
+    _supabase = createClient<Database>(supabaseUrl, supabaseKey, {
+      auth: { autoRefreshToken: false, persistSession: false } // Server-side: no auth persistence
+    });
   }
   return _supabase;
 }

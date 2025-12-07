@@ -6,15 +6,26 @@ import { SplitCreateSchema } from '$lib/validation';
 
 export const GET: RequestHandler = async () => {
   try {
+    console.log('GET /api/splits - Starting');
     const supabase = getSupabase();
+    console.log('Supabase client created successfully');
+
     const { data, error } = await supabase
       .from('splits')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase error fetching splits:', error);
-      return json({ error: 'Failed to fetch splits', details: error.message }, { status: 500 });
+      console.error('Supabase error fetching splits:', {
+        message: error.message,
+        code: (error as any).code,
+        status: (error as any).status
+      });
+      return json({
+        error: 'Failed to fetch splits',
+        details: error.message,
+        code: (error as any).code
+      }, { status: 500 });
     }
 
     const splits: Split[] = (data || []).map((row) => ({
@@ -31,8 +42,9 @@ export const GET: RequestHandler = async () => {
 
     return json(splits);
   } catch (error) {
-    console.error('Error fetching splits:', error);
-    return json({ error: 'Internal server error' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching splits:', errorMessage);
+    return json({ error: 'Internal server error', details: errorMessage }, { status: 500 });
   }
 };
 

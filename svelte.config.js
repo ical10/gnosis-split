@@ -18,7 +18,8 @@ const config = {
       split: false
     }),
     env: {
-      privatePrefix: ''
+      dir: process.cwd(),
+      privatePrefix: 'PRIVATE_'
     }
   }
 };
