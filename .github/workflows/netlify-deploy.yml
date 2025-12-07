@@ -28,6 +28,9 @@ jobs:
         run: bun run build
         env:
           VITE_MOCK_GNOSIS_PAY: true
+          VITE_USE_SUPABASE: true
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_API_KEY: ${{ secrets.SUPABASE_SECRET_API_KEY }}
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
