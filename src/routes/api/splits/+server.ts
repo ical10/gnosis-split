@@ -1,11 +1,12 @@
 import { json } from '@sveltejs/kit';
-import { supabase } from '$lib/server/supabase';
+import { getSupabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { Split } from '$lib/types';
 import { SplitCreateSchema } from '$lib/validation';
 
 export const GET: RequestHandler = async () => {
   try {
+    const supabase = getSupabase();
     const { data, error } = await supabase
       .from('splits')
       .select('*')
@@ -47,6 +48,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const split = validationResult.data;
+    const supabase = getSupabase();
 
     const { data, error } = await supabase
       .from('splits')

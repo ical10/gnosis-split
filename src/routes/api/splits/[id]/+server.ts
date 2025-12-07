@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { supabase } from '$lib/server/supabase';
+import { getSupabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { Split } from '$lib/types';
 import { SplitUpdateSchema, ParticipantsUpdateSchema } from '$lib/validation';
@@ -8,6 +8,7 @@ export const GET: RequestHandler = async ({ params }) => {
   if (!params.id) throw Error('Error when getting split');
 
   try {
+    const supabase = getSupabase();
     const { data, error } = await supabase
       .from('splits')
       .select('*')
@@ -52,6 +53,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
     }
 
     const updatedSplit = validationResult.data;
+    const supabase = getSupabase();
 
     const { data, error } = await supabase
       .from('splits')
@@ -100,6 +102,7 @@ export const DELETE: RequestHandler = async ({ params }) => {
   if (!params.id) throw Error('Error when deleting split');
 
   try {
+    const supabase = getSupabase();
     const { error } = await supabase
       .from('splits')
       .delete()
@@ -120,6 +123,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
   if (!params.id) throw Error('Error when updating participants');
 
   try {
+    const supabase = getSupabase();
     const { data: existingSplit, error: fetchError } = await supabase
       .from('splits')
       .select('id')
