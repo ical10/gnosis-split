@@ -13,7 +13,8 @@ export const GET: RequestHandler = async () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      return json({ error: 'Failed to fetch splits' }, { status: 500 });
+      console.error('Supabase error fetching splits:', error);
+      return json({ error: 'Failed to fetch splits', details: error.message }, { status: 500 });
     }
 
     const splits: Split[] = (data || []).map((row) => ({

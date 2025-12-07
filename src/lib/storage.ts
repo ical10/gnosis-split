@@ -19,7 +19,11 @@ export async function getSplits(): Promise<Split[]> {
   } else {
     try {
       const response = await fetch(API_BASE);
-      if (!response.ok) throw new Error('Failed to fetch splits');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API error:', response.status, errorData);
+        throw new Error(`Failed to fetch splits: ${response.status}`);
+      }
       return await response.json();
     } catch (error) {
       console.error('Failed to load splits:', error);
