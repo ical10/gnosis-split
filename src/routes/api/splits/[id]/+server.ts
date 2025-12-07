@@ -68,8 +68,13 @@ export const PUT: RequestHandler = async ({ params, request }) => {
       .select()
       .single();
 
-    if (error || !data) {
-      return json({ error: 'Failed to update split' }, { status: 500 });
+    if (error) {
+      console.error('Database error updating split:', error);
+      return json({ error: 'Failed to update split', details: error.message }, { status: 500 });
+    }
+
+    if (!data) {
+      return json({ error: 'Split not found' }, { status: 404 });
     }
 
     const split: Split = {
@@ -115,6 +120,16 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
   if (!params.id) throw Error('Error when updating participants');
 
   try {
+    const { data: existingSplit, error: fetchError } = await supabase
+      .from('splits')
+      .select('id')
+      .eq('id', params.id)
+      .single();
+
+    if (fetchError || !existingSplit) {
+      return json({ error: 'Split not found' }, { status: 404 });
+    }
+
     const body = await request.json();
     const validationResult = ParticipantsUpdateSchema.safeParse(body);
 
@@ -133,7 +148,8 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
       .eq('id', params.id);
 
     if (error) {
-      return json({ error: 'Failed to update participants' }, { status: 500 });
+      console.error('Database error updating participants:', error);
+      return json({ error: 'Failed to update participants', details: error.message }, { status: 500 });
     }
 
     return json({ success: true }, { status: 200 });
