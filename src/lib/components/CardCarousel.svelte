@@ -16,7 +16,7 @@
           ? 'scale-90 border-primary shadow-lg shadow-primary/50'
           : 'scale-80 border-primary/30 opacity-60'} {i === cards.length - 1 ? 'mr-4' : ''}"
       >
-        <div class="absolute inset-0 bg-linear-to-br from-black via-card to-black"></div>
+        <div class="absolute inset-0 bg-black"></div>
         <div
           class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(var(--color-primary)/0.1),transparent_50%)]"
         ></div>
