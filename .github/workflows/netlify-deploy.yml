@@ -29,13 +29,13 @@ jobs:
         env:
           VITE_MOCK_GNOSIS_PAY: true
           VITE_USE_SUPABASE: true
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SECRET_API_KEY: ${{ secrets.SUPABASE_SECRET_API_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
-          publish-dir: './.svelte-kit/output'
+          publish-dir: './.svelte-kit/build'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: 'Deploy from GitHub Actions'

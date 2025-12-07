@@ -19,7 +19,7 @@ const config = {
     }),
     env: {
       dir: process.cwd(),
-      privatePrefix: 'PRIVATE_'
+      publicPrefix: 'VITE_'
     }
   }
 };
