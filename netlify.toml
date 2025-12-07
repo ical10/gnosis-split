@@ -1,5 +1,6 @@
 [build]
 	command = "bun run build"
+	publish = ".svelte-kit/build"
 
 [build.environment]
 	BUN_VERSION = "1.2.15"
