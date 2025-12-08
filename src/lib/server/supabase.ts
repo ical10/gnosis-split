@@ -1,10 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } from '$env/static/public';
 import type { Database } from '$lib/supabase-types';
 
-let _supabase: ReturnType<typeof createClient<Database>> | null = null;
+let _supabase: SupabaseClient<Database> | undefined;
 
-export function getSupabase() {
+export function getSupabase(): SupabaseClient<Database> {
   if (!_supabase) {
     // Use public env vars (baked in at build time)
     const supabaseUrl = PUBLIC_SUPABASE_URL;
