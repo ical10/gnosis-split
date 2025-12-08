@@ -73,7 +73,7 @@
         await verifyAndMarkXDAIPaid(id, split);
 
         if (USE_SUPABASE !== 'true') {
-          const loaded = await getSplit(id);
+          const loaded = await getSplit(id, $walletAddress || undefined);
           if (loaded && splitStore) {
             splitStore = {
               subscribe: (cb: (value: Split | null) => void) => {
@@ -166,10 +166,10 @@
       await updateSplit(split.id, (s) => ({
         ...s,
         payments: [...s.payments, { address: myPart.address, txHash: hash }]
-      }));
+      }), $walletAddress || undefined);
 
       if (USE_SUPABASE !== 'true') {
-        const loaded = await getSplit(split.id);
+        const loaded = await getSplit(split.id, $walletAddress || undefined);
         if (loaded && splitStore) {
           splitStore = {
             subscribe: (cb: (value: Split | null) => void) => {

@@ -80,7 +80,7 @@ export async function getSplit(id: string, userAddress?: string): Promise<Split 
   }
 }
 
-export async function updateSplit(id: string, updater: (split: Split) => Split): Promise<void> {
+export async function updateSplit(id: string, updater: (split: Split) => Split, userAddress?: string): Promise<void> {
   if (!USE_SUPABASE) {
     if (!browser) return;
 
@@ -97,11 +97,12 @@ export async function updateSplit(id: string, updater: (split: Split) => Split):
       throw error;
     }
   } else {
-    const split = await getSplit(id);
+    const split = await getSplit(id, userAddress);
     if (!split) return;
 
     const updated = updater(split);
-    const response = await fetch(`${API_BASE}/${id}`, {
+    const url = userAddress ? `${API_BASE}/${id}?address=${encodeURIComponent(userAddress)}` : `${API_BASE}/${id}`;
+    const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updated)

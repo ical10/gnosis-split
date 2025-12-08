@@ -87,9 +87,9 @@
       await updateSplit(split.id, (s) => ({
         ...s,
         payments: [...s.payments, { address: participant!.address, txHash: hash }]
-      }));
+      }), $walletAddress || undefined);
 
-      const updated = await getSplit(split.id);
+      const updated = await getSplit(split.id, $walletAddress || undefined);
       if (updated) {
         split = updated;
         isPaid = true;

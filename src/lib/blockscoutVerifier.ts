@@ -83,7 +83,7 @@ export async function verifyAndMarkXDAIPaid(splitId: string, split: Split) {
       await updateSplit(splitId, (s) => ({
         ...s,
         payments: newPayments
-      }));
+      }), split.payerAddress);
     }
   } catch (error) {
     console.error('Blockscout verification error:', error);
