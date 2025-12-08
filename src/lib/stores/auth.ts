@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { address } from './wallet';
 import { signInWithWallet, getAuthToken, clearAuth } from '$lib/auth';
 import { config } from '$lib/appkit';
@@ -56,11 +56,7 @@ address.subscribe(async ($address) => {
 
   lastAddress = $address;
 
-  let currentlyAuthenticated = false;
-  const unsubscribe = isAuthenticated.subscribe(value => {
-    currentlyAuthenticated = value;
-  });
-  unsubscribe();
+  const currentlyAuthenticated = get(isAuthenticated);
 
   if (!currentlyAuthenticated) {
     await attemptSignIn($address);
