@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { getSupabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
-import type { Split } from '$lib/types';
+import type { Split, Participant } from '$lib/types';
 import { SplitUpdateSchema, ParticipantsUpdateSchema } from '$lib/validation';
 
 export const GET: RequestHandler = async ({ params, url }) => {
@@ -20,8 +20,16 @@ export const GET: RequestHandler = async ({ params, url }) => {
       return json({ error: 'Split not found' }, { status: 404 });
     }
 
-    if (userAddress && data.payer_address.toLowerCase() !== userAddress.toLowerCase()) {
-      return json({ error: 'Unauthorized' }, { status: 403 });
+    if (userAddress) {
+      const isCreator = data.payer_address.toLowerCase() === userAddress.toLowerCase();
+      const participants = data.participants as unknown as Participant[];
+      const isParticipant = participants?.some(
+        (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+      );
+
+      if (!isCreator && !isParticipant) {
+        return json({ error: 'Unauthorized' }, { status: 403 });
+      }
     }
 
     const split: Split = {

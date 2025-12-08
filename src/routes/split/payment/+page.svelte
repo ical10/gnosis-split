@@ -13,7 +13,6 @@
   import { config } from '$lib/appkit';
   import { Button } from '$lib/components/ui/button';
   import * as Card from '$lib/components/ui/card';
-  import { Badge } from '$lib/components/ui/badge';
   import * as Avatar from '$lib/components/ui/avatar';
   import { toast } from 'svelte-sonner';
 
@@ -32,7 +31,7 @@
       return;
     }
 
-    const loaded = await getSplit(splitId);
+    const loaded = await getSplit(splitId, $walletAddress || participantAddr);
     if (!loaded) {
       goto('/splits');
       return;

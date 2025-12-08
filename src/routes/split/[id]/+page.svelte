@@ -33,9 +33,9 @@
     }
 
     if (USE_SUPABASE === 'true') {
-      splitStore = createSplitStore(id);
+      splitStore = createSplitStore(id, $walletAddress);
     } else {
-      const loaded = await getSplit(id);
+      const loaded = await getSplit(id, $walletAddress);
       if (!loaded) {
         goto('/splits');
         return;

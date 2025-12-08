@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Split } from './types';
 
-export const createSplitStore = (splitId: string) => {
+export const createSplitStore = (splitId: string, userAddress?: string) => {
   const { subscribe, set } = writable<Split | null>(null);
 
   if (import.meta.env.VITE_USE_SUPABASE !== 'true') {
@@ -10,7 +10,8 @@ export const createSplitStore = (splitId: string) => {
 
   const load = async () => {
     try {
-      const response = await fetch(`/api/splits/${splitId}`);
+      const url = userAddress ? `/api/splits/${splitId}?address=${encodeURIComponent(userAddress)}` : `/api/splits/${splitId}`;
+      const response = await fetch(url);
       if (!response.ok) {
         console.error('Failed to load split');
         return;
