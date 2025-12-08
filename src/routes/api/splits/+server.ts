@@ -3,6 +3,7 @@ import { getSupabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { Split } from '$lib/types';
 import { SplitCreateSchema } from '$lib/validation';
+import { getAddress } from 'viem';
 
 export const GET: RequestHandler = async ({ locals }) => {
   try {
@@ -12,14 +13,13 @@ export const GET: RequestHandler = async ({ locals }) => {
       return json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('GET /api/splits - Starting for address:', userAddress);
     const supabase = getSupabase();
-    console.log('Supabase client created successfully');
+    const checksumAddress = getAddress(userAddress);
 
     const { data, error } = await supabase
       .from('splits')
       .select('*')
-      .eq('payer_address', userAddress)
+      .eq('payer_address', checksumAddress)
       .order('created_at', { ascending: false });
 
     if (error) {

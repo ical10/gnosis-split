@@ -3,6 +3,7 @@ import { getSupabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { Split, Participant } from '$lib/types';
 import { SplitUpdateSchema, ParticipantsUpdateSchema } from '$lib/validation';
+import { getAddress } from 'viem';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
   if (!params.id) throw Error('Error when getting split');
@@ -24,10 +25,11 @@ export const GET: RequestHandler = async ({ params, locals }) => {
       return json({ error: 'Split not found' }, { status: 404 });
     }
 
-    const isCreator = data.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const checksumUserAddress = getAddress(userAddress);
+    const isCreator = data.payer_address === checksumUserAddress;
     const participants = data.participants as unknown as Participant[];
     const isParticipant = participants?.some(
-      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+      (p: Participant) => getAddress(p.address) === checksumUserAddress
     );
 
     if (!isCreator && !isParticipant) {
@@ -84,10 +86,11 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
       return json({ error: 'Split not found' }, { status: 404 });
     }
 
-    const isCreator = splitData.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const checksumUserAddress = getAddress(userAddress);
+    const isCreator = splitData.payer_address === checksumUserAddress;
     const participants = splitData.participants as unknown as Participant[];
     const isParticipant = participants?.some(
-      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+      (p: Participant) => getAddress(p.address) === checksumUserAddress
     );
 
     if (!isCreator && !isParticipant) {
@@ -161,10 +164,11 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
       return json({ error: 'Split not found' }, { status: 404 });
     }
 
-    const isCreator = splitData.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const checksumUserAddress = getAddress(userAddress);
+    const isCreator = splitData.payer_address === checksumUserAddress;
     const participants = splitData.participants as unknown as Participant[];
     const isParticipant = participants?.some(
-      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+      (p: Participant) => getAddress(p.address) === checksumUserAddress
     );
 
     if (!isCreator && !isParticipant) {
@@ -209,10 +213,11 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
       return json({ error: 'Split not found' }, { status: 404 });
     }
 
-    const isCreator = splitData.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const checksumUserAddress = getAddress(userAddress);
+    const isCreator = splitData.payer_address === checksumUserAddress;
     const participants = splitData.participants as unknown as Participant[];
     const isParticipant = participants?.some(
-      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+      (p: Participant) => getAddress(p.address) === checksumUserAddress
     );
 
     if (!isCreator && !isParticipant) {
