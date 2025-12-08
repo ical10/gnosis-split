@@ -10,6 +10,16 @@ export const appKitStore = writable({
 });
 
 if (browser && appKit) {
+  const account = appKit.getAccount?.();
+  const state = appKit.getState?.();
+
+  appKitStore.set({
+    open: state?.open ?? false,
+    selectedNetworkId: state?.selectedNetworkId,
+    address: account?.address,
+    isConnected: account?.isConnected ?? false
+  });
+
   appKit.subscribeState((state) => {
     appKitStore.update((current) => ({
       ...current,
