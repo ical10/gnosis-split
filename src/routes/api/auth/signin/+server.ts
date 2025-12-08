@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
-import { verifyMessage } from 'viem';
+import { verifyMessage, getAddress } from 'viem';
 import jwt from 'jsonwebtoken';
 import { SUPABASE_JWT_SECRET } from '$env/static/private';
 
@@ -60,11 +60,13 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'Invalid signature' }, { status: 401 });
 		}
 
+		const checksumAddress = getAddress(address);
+
 		const token = jwt.sign(
 			{
-				sub: address,
+				sub: checksumAddress,
 				user_metadata: {
-					address: address.toLowerCase()
+					address: checksumAddress
 				}
 			},
 			JWT_SECRET,
