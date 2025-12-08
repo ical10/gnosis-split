@@ -3,24 +3,23 @@ import { getSupabase } from '$lib/server/supabase';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { Split } from '$lib/types';
 import { SplitCreateSchema } from '$lib/validation';
+import { getAddress } from 'viem';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ locals }) => {
   try {
-    const userAddress = url.searchParams.get('address');
+    const userAddress = locals.user?.user_metadata?.address;
 
     if (!userAddress) {
-      console.warn('GET /api/splits - No user address provided');
-      return json([], { status: 200 });
+      return json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('GET /api/splits - Starting for address:', userAddress);
     const supabase = getSupabase();
-    console.log('Supabase client created successfully');
+    const checksumAddress = getAddress(userAddress);
 
     const { data, error } = await supabase
       .from('splits')
       .select('*')
-      .eq('payer_address', userAddress)
+      .eq('payer_address', checksumAddress)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -56,8 +55,13 @@ export const GET: RequestHandler = async ({ url }) => {
   }
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
   try {
+    const userAddress = locals.user?.user_metadata?.address;
+    if (!userAddress) {
+      return json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const validationResult = SplitCreateSchema.safeParse(body);
 
@@ -69,6 +73,11 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const split = validationResult.data;
+
+    if (getAddress(split.payerAddress) !== getAddress(userAddress)) {
+      return json({ error: 'Forbidden: can only create splits for yourself' }, { status: 403 });
+    }
+
     const supabase = getSupabase();
 
     const { data, error } = await supabase

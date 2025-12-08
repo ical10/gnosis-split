@@ -3,6 +3,7 @@
   import favicon from '$lib/assets/favicon.svg';
   import BottomNav from '$lib/components/BottomNav.svelte';
   import '$lib/appkit';
+  import '$lib/stores/auth';
   import { Toaster } from '$lib/components/ui/sonner';
   import Github from 'lucide-svelte/icons/github';
 

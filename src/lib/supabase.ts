@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Split } from './types';
+import { getHeaders } from './storage';
 
 export const createSplitStore = (splitId: string, userAddress?: string) => {
   const { subscribe, set } = writable<Split | null>(null);
@@ -11,7 +12,7 @@ export const createSplitStore = (splitId: string, userAddress?: string) => {
   const load = async () => {
     try {
       const url = userAddress ? `/api/splits/${splitId}?address=${encodeURIComponent(userAddress)}` : `/api/splits/${splitId}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: getHeaders() });
       if (!response.ok) {
         console.error('Failed to load split');
         return;
