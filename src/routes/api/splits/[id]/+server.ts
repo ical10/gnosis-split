@@ -153,7 +153,6 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
   try {
     const supabase = getSupabase();
 
-    // Fetch split and check authorization
     const { data: splitData, error: fetchError } = await supabase
       .from('splits')
       .select('*')
@@ -166,12 +165,8 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 
     const checksumUserAddress = getAddress(userAddress);
     const isCreator = splitData.payer_address === checksumUserAddress;
-    const participants = splitData.participants as unknown as Participant[];
-    const isParticipant = participants?.some(
-      (p: Participant) => getAddress(p.address) === checksumUserAddress
-    );
 
-    if (!isCreator && !isParticipant) {
+    if (!isCreator) {
       return json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -202,7 +197,6 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
   try {
     const supabase = getSupabase();
 
-    // Fetch split and check authorization
     const { data: splitData, error: fetchError } = await supabase
       .from('splits')
       .select('*')
