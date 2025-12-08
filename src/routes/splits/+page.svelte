@@ -3,6 +3,7 @@
   import { goto } from '$app/navigation';
   import AuthGuard from '$lib/components/AuthGuard.svelte';
   import { getSplits } from '$lib/storage';
+  import { address } from '$lib/stores/wallet';
   import type { Split } from '$lib/types';
   import { getPaymentStatus } from '$lib/utils';
   import { Button } from '$lib/components/ui/button';
@@ -20,7 +21,7 @@
   async function loadSplits() {
     loading = true;
     try {
-      const allSplits = await getSplits();
+      const allSplits = await getSplits($address);
       splits = allSplits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } catch (error) {
       console.error('Error when fetching splits:', error);

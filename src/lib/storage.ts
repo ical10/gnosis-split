@@ -5,20 +5,25 @@ const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE === 'true';
 const STORAGE_KEY = 'gnosisSplits';
 const API_BASE = '/api/splits';
 
-export async function getSplits(): Promise<Split[]> {
+export async function getSplits(userAddress?: string): Promise<Split[]> {
   if (!USE_SUPABASE) {
     if (!browser) return [];
 
     try {
       const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      const splits = data ? JSON.parse(data) : [];
+      if (userAddress) {
+        return splits.filter((s: Split) => s.payerAddress.toLowerCase() === userAddress.toLowerCase());
+      }
+      return splits;
     } catch (error) {
       console.error('Failed to load splits:', error);
       return [];
     }
   } else {
     try {
-      const response = await fetch(API_BASE);
+      const url = userAddress ? `${API_BASE}?address=${encodeURIComponent(userAddress)}` : API_BASE;
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('API error:', response.status, errorData);
@@ -58,14 +63,15 @@ export async function saveSplit(split: Omit<Split, 'id' | 'createdAt'>): Promise
   return await response.json();
 }
 
-export async function getSplit(id: string): Promise<Split | undefined> {
+export async function getSplit(id: string, userAddress?: string): Promise<Split | undefined> {
   if (!USE_SUPABASE) {
-    const splits = await getSplits();
+    const splits = await getSplits(userAddress);
     return splits.find((s) => s.id === id);
   }
 
   try {
-    const response = await fetch(`${API_BASE}/${id}`);
+    const url = userAddress ? `${API_BASE}/${id}?address=${encodeURIComponent(userAddress)}` : `${API_BASE}/${id}`;
+    const response = await fetch(url);
     if (!response.ok) return undefined;
     return await response.json();
   } catch (error) {

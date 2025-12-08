@@ -4,10 +4,11 @@ import type { RequestHandler } from '@sveltejs/kit';
 import type { Split } from '$lib/types';
 import { SplitUpdateSchema, ParticipantsUpdateSchema } from '$lib/validation';
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, url }) => {
   if (!params.id) throw Error('Error when getting split');
 
   try {
+    const userAddress = url.searchParams.get('address');
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('splits')
@@ -17,6 +18,10 @@ export const GET: RequestHandler = async ({ params }) => {
 
     if (error || !data) {
       return json({ error: 'Split not found' }, { status: 404 });
+    }
+
+    if (userAddress && data.payer_address.toLowerCase() !== userAddress.toLowerCase()) {
+      return json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const split: Split = {

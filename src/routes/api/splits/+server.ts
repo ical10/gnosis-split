@@ -4,15 +4,23 @@ import type { RequestHandler } from '@sveltejs/kit';
 import type { Split } from '$lib/types';
 import { SplitCreateSchema } from '$lib/validation';
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
   try {
-    console.log('GET /api/splits - Starting');
+    const userAddress = url.searchParams.get('address');
+
+    if (!userAddress) {
+      console.warn('GET /api/splits - No user address provided');
+      return json([], { status: 200 });
+    }
+
+    console.log('GET /api/splits - Starting for address:', userAddress);
     const supabase = getSupabase();
     console.log('Supabase client created successfully');
 
     const { data, error } = await supabase
       .from('splits')
       .select('*')
+      .eq('payer_address', userAddress)
       .order('created_at', { ascending: false });
 
     if (error) {
