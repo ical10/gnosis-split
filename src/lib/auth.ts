@@ -1,4 +1,4 @@
-import { signMessage } from "@wagmi/core";
+import { getWalletClient } from "@wagmi/core";
 import type { Address } from "viem";
 
 const AUTH_TOKEN_KEY = 'auth_token';
@@ -8,9 +8,14 @@ export async function signInWithWallet(address: Address, config: any): Promise<s
     const timestamp = Date.now();
     const message = `Sign in to Gnosis Split\n\nTimestamp: ${timestamp}`;
 
-    const signature = await signMessage(config, {
-      account: address,
-      message
+    const walletClient = await getWalletClient(config, { account: address });
+    if (!walletClient) {
+      throw new Error('Failed to get wallet client');
+    }
+
+    const signature = await walletClient.signMessage({
+      message,
+      account: address
     });
 
     const response = await fetch('/api/auth/signin', {
@@ -35,7 +40,6 @@ export async function signInWithWallet(address: Address, config: any): Promise<s
 
     return token;
   } catch (error) {
-    console.error('Sign-in error:', error);
     throw error;
   }
 }

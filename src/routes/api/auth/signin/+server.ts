@@ -1,9 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { verifyMessage } from 'viem';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
+import { SUPABASE_JWT_SECRET } from '$env/static/private';
 
-const JWT_SECRET = process.env.SUPABASE_JWT_SECRET;
+const JWT_SECRET = SUPABASE_JWT_SECRET;
 const TIMESTAMP_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -48,7 +49,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		return json({ token }, { status: 200 });
 	} catch (error) {
-		console.error('Sign-in error:', error);
 		return json({ error: 'Sign-in failed' }, { status: 400 });
 	}
 };
