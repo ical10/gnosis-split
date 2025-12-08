@@ -74,8 +74,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     const split = validationResult.data;
 
-    // Verify user is creating a split for themselves
-    if (split.payerAddress.toLowerCase() !== userAddress.toLowerCase()) {
+    if (getAddress(split.payerAddress) !== getAddress(userAddress)) {
       return json({ error: 'Forbidden: can only create splits for yourself' }, { status: 403 });
     }
 
