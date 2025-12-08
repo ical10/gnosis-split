@@ -16,7 +16,7 @@ export function getAuthHeaders(): Record<string, string> {
   };
 }
 
-function getHeaders(additionalHeaders?: Record<string, string>): Record<string, string> {
+export function getHeaders(additionalHeaders?: Record<string, string>): Record<string, string> {
   return {
     'Content-Type': 'application/json',
     ...getAuthHeaders(),
