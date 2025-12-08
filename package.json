@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "packageManger": "bun@1.1.38",
+  "packageManager": "bun@1.2.15",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -55,6 +55,7 @@
     "lucide-svelte": "^0.554.0",
     "qrcode": "^1.5.4",
     "viem": "^2.39.0",
-    "wagmi": "^2.19.4"
+    "wagmi": "^2.19.4",
+    "zod": "^4.1.13"
   }
 }

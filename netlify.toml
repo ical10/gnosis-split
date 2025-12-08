@@ -1,3 +1,8 @@
 [build]
-	command = "npm run build"
-	publish = "build"
+	command = "bun run build"
+	publish = ".svelte-kit/build"
+
+[build.environment]
+	BUN_VERSION = "1.2.15"
+	VITE_USE_SUPABASE = "true"
+	VITE_MOCK_GNOSIS_PAY = "true"
