@@ -1,8 +1,10 @@
 import { writable } from 'svelte/store';
 import { address } from './wallet';
-import { signInWithWallet, getAuthToken } from '$lib/auth';
+import { signInWithWallet, getAuthToken, clearAuth } from '$lib/auth';
 import { config } from '$lib/appkit';
 import type { Address } from 'viem';
+
+let lastAddress: Address | string | null = null;
 
 export const isAuthenticated = writable(false);
 export const isSigningIn = writable(false);
@@ -38,15 +40,29 @@ if (typeof window !== 'undefined') {
 }
 
 address.subscribe(async ($address) => {
-  if ($address) {
-    let currentlyAuthenticated = false;
-    const unsubscribe = isAuthenticated.subscribe(value => {
-      currentlyAuthenticated = value;
-    });
-    unsubscribe();
+  if (lastAddress && lastAddress !== $address) {
+    clearAuth();
+    isAuthenticated.set(false);
+    signInError.set(null);
+  }
 
-    if (!currentlyAuthenticated) {
-      await attemptSignIn($address);
-    }
+  if (!$address) {
+    clearAuth();
+    isAuthenticated.set(false);
+    signInError.set(null);
+    lastAddress = null;
+    return;
+  }
+
+  lastAddress = $address;
+
+  let currentlyAuthenticated = false;
+  const unsubscribe = isAuthenticated.subscribe(value => {
+    currentlyAuthenticated = value;
+  });
+  unsubscribe();
+
+  if (!currentlyAuthenticated) {
+    await attemptSignIn($address);
   }
 });
