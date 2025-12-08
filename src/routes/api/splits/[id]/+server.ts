@@ -4,11 +4,15 @@ import type { RequestHandler } from '@sveltejs/kit';
 import type { Split, Participant } from '$lib/types';
 import { SplitUpdateSchema, ParticipantsUpdateSchema } from '$lib/validation';
 
-export const GET: RequestHandler = async ({ params, url }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
   if (!params.id) throw Error('Error when getting split');
 
+  const userAddress = locals.user?.user_metadata?.address;
+  if (!userAddress) {
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const userAddress = url.searchParams.get('address');
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('splits')
@@ -20,16 +24,14 @@ export const GET: RequestHandler = async ({ params, url }) => {
       return json({ error: 'Split not found' }, { status: 404 });
     }
 
-    if (userAddress) {
-      const isCreator = data.payer_address.toLowerCase() === userAddress.toLowerCase();
-      const participants = data.participants as unknown as Participant[];
-      const isParticipant = participants?.some(
-        (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
-      );
+    const isCreator = data.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const participants = data.participants as unknown as Participant[];
+    const isParticipant = participants?.some(
+      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+    );
 
-      if (!isCreator && !isParticipant) {
-        return json({ error: 'Unauthorized' }, { status: 403 });
-      }
+    if (!isCreator && !isParticipant) {
+      return json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const split: Split = {
@@ -51,8 +53,13 @@ export const GET: RequestHandler = async ({ params, url }) => {
   }
 };
 
-export const PUT: RequestHandler = async ({ params, request }) => {
+export const PUT: RequestHandler = async ({ params, request, locals }) => {
   if (!params.id) throw Error("Error when updating split");
+
+  const userAddress = locals.user?.user_metadata?.address;
+  if (!userAddress) {
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const body = await request.json();
@@ -65,8 +72,29 @@ export const PUT: RequestHandler = async ({ params, request }) => {
       );
     }
 
-    const updatedSplit = validationResult.data;
     const supabase = getSupabase();
+
+    const { data: splitData, error: fetchError } = await supabase
+      .from('splits')
+      .select('*')
+      .eq('id', params.id)
+      .single();
+
+    if (fetchError || !splitData) {
+      return json({ error: 'Split not found' }, { status: 404 });
+    }
+
+    const isCreator = splitData.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const participants = splitData.participants as unknown as Participant[];
+    const isParticipant = participants?.some(
+      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+    );
+
+    if (!isCreator && !isParticipant) {
+      return json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const updatedSplit = validationResult.data;
 
     const { data, error } = await supabase
       .from('splits')
@@ -111,11 +139,38 @@ export const PUT: RequestHandler = async ({ params, request }) => {
   }
 };
 
-export const DELETE: RequestHandler = async ({ params }) => {
+export const DELETE: RequestHandler = async ({ params, locals }) => {
   if (!params.id) throw Error('Error when deleting split');
+
+  const userAddress = locals.user?.user_metadata?.address;
+  if (!userAddress) {
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const supabase = getSupabase();
+
+    // Fetch split and check authorization
+    const { data: splitData, error: fetchError } = await supabase
+      .from('splits')
+      .select('*')
+      .eq('id', params.id)
+      .single();
+
+    if (fetchError || !splitData) {
+      return json({ error: 'Split not found' }, { status: 404 });
+    }
+
+    const isCreator = splitData.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const participants = splitData.participants as unknown as Participant[];
+    const isParticipant = participants?.some(
+      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+    );
+
+    if (!isCreator && !isParticipant) {
+      return json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { error } = await supabase
       .from('splits')
       .delete()
@@ -132,19 +187,36 @@ export const DELETE: RequestHandler = async ({ params }) => {
   }
 };
 
-export const PATCH: RequestHandler = async ({ params, request }) => {
+export const PATCH: RequestHandler = async ({ params, request, locals }) => {
   if (!params.id) throw Error('Error when updating participants');
+
+  const userAddress = locals.user?.user_metadata?.address;
+  if (!userAddress) {
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const supabase = getSupabase();
-    const { data: existingSplit, error: fetchError } = await supabase
+
+    // Fetch split and check authorization
+    const { data: splitData, error: fetchError } = await supabase
       .from('splits')
-      .select('id')
+      .select('*')
       .eq('id', params.id)
       .single();
 
-    if (fetchError || !existingSplit) {
+    if (fetchError || !splitData) {
       return json({ error: 'Split not found' }, { status: 404 });
+    }
+
+    const isCreator = splitData.payer_address.toLowerCase() === userAddress.toLowerCase();
+    const participants = splitData.participants as unknown as Participant[];
+    const isParticipant = participants?.some(
+      (p: Participant) => p.address.toLowerCase() === userAddress.toLowerCase()
+    );
+
+    if (!isCreator && !isParticipant) {
+      return json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -157,11 +229,11 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
       );
     }
 
-    const { participants } = validationResult.data;
+    const { participants: newParticipants } = validationResult.data;
 
     const { error } = await supabase
       .from('splits')
-      .update({ participants: participants as any })
+      .update({ participants: newParticipants as any })
       .eq('id', params.id);
 
     if (error) {

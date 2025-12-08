@@ -1,9 +1,28 @@
 import { browser } from '$app/environment';
 import type { Split, Participant } from './types';
+import { getAuthToken } from './auth';
 
 const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE === 'true';
 const STORAGE_KEY = 'gnosisSplits';
 const API_BASE = '/api/splits';
+
+export function getAuthHeaders(): Record<string, string> {
+  const token = getAuthToken();
+  if (!token) {
+    return {};
+  }
+  return {
+    'Authorization': `Bearer ${token}`
+  };
+}
+
+function getHeaders(additionalHeaders?: Record<string, string>): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    ...getAuthHeaders(),
+    ...additionalHeaders
+  };
+}
 
 export async function getSplits(userAddress?: string): Promise<Split[]> {
   if (!USE_SUPABASE) {
@@ -23,7 +42,9 @@ export async function getSplits(userAddress?: string): Promise<Split[]> {
   } else {
     try {
       const url = userAddress ? `${API_BASE}?address=${encodeURIComponent(userAddress)}` : API_BASE;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: getHeaders()
+      });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('API error:', response.status, errorData);
@@ -55,7 +76,7 @@ export async function saveSplit(split: Omit<Split, 'id' | 'createdAt'>): Promise
 
   const response = await fetch(API_BASE, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getHeaders(),
     body: JSON.stringify(split)
   });
 
@@ -71,7 +92,9 @@ export async function getSplit(id: string, userAddress?: string): Promise<Split 
 
   try {
     const url = userAddress ? `${API_BASE}/${id}?address=${encodeURIComponent(userAddress)}` : `${API_BASE}/${id}`;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: getHeaders()
+    });
     if (!response.ok) return undefined;
     return await response.json();
   } catch (error) {
@@ -104,7 +127,7 @@ export async function updateSplit(id: string, updater: (split: Split) => Split, 
     const url = userAddress ? `${API_BASE}/${id}?address=${encodeURIComponent(userAddress)}` : `${API_BASE}/${id}`;
     const response = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
       body: JSON.stringify(updated)
     });
 
@@ -126,7 +149,8 @@ export async function deleteSplit(id: string): Promise<void> {
     }
   } else {
     const response = await fetch(`${API_BASE}/${id}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: getHeaders()
     });
 
     if (!response.ok) throw new Error('Failed to delete split');
@@ -154,7 +178,7 @@ export async function updateSplitParticipants(splitId: string, participants: Par
 
   const response = await fetch(`${API_BASE}/${splitId}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getHeaders(),
     body: JSON.stringify({ participants })
   });
 
