@@ -6,3 +6,4 @@
 	BUN_VERSION = "1.2.15"
 	VITE_USE_SUPABASE = "true"
 	VITE_MOCK_GNOSIS_PAY = "true"
+	SECRETS_SCAN_OMIT_PATHS = ".netlify/server/**,.svelte-kit/output/server/**"
