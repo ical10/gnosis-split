@@ -4,7 +4,6 @@ import { verifyMessage, getAddress } from 'viem';
 import jwt from 'jsonwebtoken';
 import { SUPABASE_JWT_SECRET } from '$env/static/private';
 
-const JWT_SECRET = SUPABASE_JWT_SECRET;
 const TIMESTAMP_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes
 const EXPECTED_MESSAGE_PREFIX = 'Sign in to Gnosis Split';
 
@@ -39,7 +38,7 @@ function validateMessage(message: string, requestTimestamp: number | string): { 
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		if (!JWT_SECRET) {
+		if (!SUPABASE_JWT_SECRET) {
 			return json({ error: 'Server misconfigured' }, { status: 500 });
 		}
 
@@ -69,7 +68,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					address: checksumAddress
 				}
 			},
-			JWT_SECRET,
+			SUPABASE_JWT_SECRET,
 			{
 				expiresIn: '1d',
 				algorithm: 'HS256'
