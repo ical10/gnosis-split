@@ -6,7 +6,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   const authHeader = event.request.headers.get('authorization');
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
-  if (token) {
+  if (token && SUPABASE_JWT_SECRET) {
     try {
       const decodedPayload = jwt.verify(token, SUPABASE_JWT_SECRET, { algorithms: ['HS256'] }) as any;
       event.locals.user = decodedPayload;
